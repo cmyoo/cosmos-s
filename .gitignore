@@ -1,0 +1,4 @@
+*.o
+.dep.inc
+cosmos_s
+out_*.dat
