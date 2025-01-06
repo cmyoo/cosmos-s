@@ -2,7 +2,7 @@
 ##   parameters for COSMOS_S code 
 ##   ver1.00 by Chulmoon Yoo  
 ##################################################################################
-1000	        # maximum step of the main loop 
+99999999        # maximum step of the main loop 
 30.	            # maximum time to evolve
 3	            # tab number of the bufer grids
 20.	            # amp
@@ -19,8 +19,7 @@
 5.0	            # etab(eta)
 0.75	        # etabb(k)
 0.	            # KO dissipation
-10	            # excision grid number
-0	            # excision(0:false,1:true)
+0	            # excision grid number (0:without excision)
 
 ##################################################################################
 ###  initial data parameter
@@ -29,10 +28,10 @@
 ini_all.dat	    # continue file
 0.8	            # inr  parameter for the smoothing function
 1.0	            # outr parameter for the smoothing function
-0.5	            # amplitude 
-10.	            # tipical wave number
+1.8	            # amplitude 
+10.	            # typical wave number
 0.	            # amplitude for the scalar field
-20.	            # tipical wave number for the scalar field
+10.	            # tipical wave number for the scalar field
 100.0	        # Hubble
 
 ##################################################################################
@@ -45,6 +44,7 @@ ini_all.dat	    # continue file
 ##################################################################################
 ###  parameters for output
 ##################################################################################
-0.	            # 1st part print interval boundary time
+5.	            # 1st part print interval boundary time
 2.	            # 2nd part
 100.	        # changing time for print interval
+50             # horizon formation check interval

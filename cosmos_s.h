@@ -2021,12 +2021,10 @@ public:
 
 			if((1.-Comp)*(1.-preComp)<=0.)
 			{
-				//cout << "horizon found" << endl;
-				
 				if(hnc+1>=hnmax)
 				{
 					cout << "too many horizons" << endl;
-					exit(1);
+					//exit(1);
 				}
 				else
 				{
@@ -2084,8 +2082,6 @@ public:
 					hpsqn2=hpsqn;
 					dev=devtemp;
 					hpsqn=hp;
-					// cout << "hsqn=hp" << hsqn << "=" << hp << endl;
-					// exit(0);
 				}
 			}
 
@@ -2117,7 +2113,6 @@ public:
 							devs[hn+noashc]=0.;
 							noashc++;
 
-							cout << "new horizon 1" << endl;
 							if(hn+noashc>=hnmax)
 							{
 								cout << "too many horizons 1" << endl;
@@ -2133,7 +2128,7 @@ public:
 						hcpn[hn+noashc]=hcc;
 						devs[hn+noashc]=0.;
 						noashc++;
-						cout << "new horizon 2" << endl;
+
 						if(hn+noashc>=hnmax)
 						{
 							cout << "too many horizons 2" << endl;
@@ -2152,7 +2147,6 @@ public:
 					hcpn[hn+noashc]=hcpn[hpsqn2];
 					devs[hn+noashc]=0.;
 					noashc++;
-					cout << "new horizon 3" << endl;
 
 					if(hn+noashc>=hnmax)
 					{
@@ -2168,7 +2162,6 @@ public:
 				hcpn[hn+noashc]=hc;
 				devs[hn+noashc]=0.;
 				noashc++;
-				cout << "new horizon 4" << endl;
 
 				if(hn+noashc>=hnmax)
 				{
