@@ -39,6 +39,32 @@
 using namespace std;
 
 
+void check_continue_file(					//checking parameter consistency with the continue file
+ifstream& fcontinue, 								//initial parameter file
+bool& fld,									//for fluid evolution 
+bool& scl,									//for scalar evolution
+int& exc,									//excision
+int& exg,									//excision grid
+int& tab, 									//tab num for buf grids
+int& nzmax, 								//max grid num of z
+int& laymax,								//max fmr layer number
+int& ln,									//fmr layer number
+int *lbs									//grid number for fmr region on z-axis
+);
+
+void output_params(							//output all needed parameters for continue
+ofstream& fcontinue, 						//initial parameter file
+bool& fld,									//for fluid evolution 
+bool& scl,									//for scalar evolution
+int& exc,									//excision
+int& exg,									//excision grid
+int& tab, 									//tab num for buf grids
+int& nzmax, 								//max grid num of z
+int& laymax,								//max fmr layer number
+int& ln,									//fmr layer number
+int *lbs									//grid number for fmr region on z-axis
+);
+
 
 void initial_read(							//reading inital para
 ifstream& fin, 								//initial parameter file
@@ -56,7 +82,6 @@ double& etab, 								//etab for gauge
 double& etabb, 								//etabb for gauge
 double& KOep, 								//factor for Kreiss-Oliger disspation term
 int& exg,									//excision grid num
-int& exc,									//initial excision setting
 int& contn,									//1 for continue
 char *file_continue,						//continue file
 double& inr, 								//inner radius of matching region for the profile
@@ -71,7 +96,8 @@ double& Mkap, 								//kappa in MUSCL
 double& bminmod, 							//b in minmod function
 double& ptintval1,							//1st part print interval boundary time
 double& ptintval2,							//2nd
-double& changept							//printing interval change time
+double& changept,							//printing interval change time
+int& horicheckintv							//horizon formation check interval
 );
 
 
@@ -129,6 +155,8 @@ int main(int argc,char* argv[])
 	double changept;						//printing interval change time
 	double nexttimeprint;
 	
+	int horicheckintv;
+
 	int exc=0;								//excision(0:false,1:true)
 	int laymax;								//max number of layers
 	int lbs[10];							//grid numbers for fmr region
@@ -144,8 +172,8 @@ int main(int argc,char* argv[])
 		nzmax,
 		xmax, zmax,
 		cfl, cdt, etaa, etab, etabb,
-		KOep, exg, exc, contn, file_continue, inr,outr,mu,kk,mus,kks, Hb, fluidw, Mkap, bminmod,
-		ptintval1,ptintval2,changept);
+		KOep, exg, contn, file_continue, inr,outr,mu,kk,mus,kks, Hb, fluidw, Mkap, bminmod,
+		ptintval1,ptintval2,changept,horicheckintv);
 	fin.close();
 	
 	
@@ -228,18 +256,16 @@ int main(int argc,char* argv[])
 		ifstream fcontinue(file_continue);
 		if(fcontinue.fail()){
 			cout << "Initial data file to continue is not found." << endl;
-			abort();
+			exit(1);
 		}
 		
-		string buf;
-		getline(fcontinue, buf);
-		cout << buf << endl;
-		
-		sscanf(buf.data(),"##ln=%d",
-				&ln);
+		//parameter consistency check
+		check_continue_file(fcontinue,fld,scl,exc,exg,tab,nzmax,laymax,ln,lbs);
 
-		cout << "continue" << endl;
 		fmv->initial_continue(fcontinue);
+		cout << "continue" << endl;
+
+		string buf;
 		getline(fcontinue, buf);
 		getline(fcontinue, buf);
 		
@@ -262,7 +288,14 @@ int main(int argc,char* argv[])
 				fmv1[i-1]->set_ulay(fmv1[i]);
 			}
 		}
-		
+
+		//preparation for using excision		
+		if(exc)
+		{
+			fmv1[ln-1]->set_exc(true);
+			fmv1[ln-1]->set_excflags();
+		}
+	
 		fcontinue.close();
 						
 		t=fmv->get_t();
@@ -314,19 +347,11 @@ int main(int argc,char* argv[])
 	else
 	 nexttimeprint=int(t/ptintval1)*ptintval1;
 
-	//preparation for using excision
-	if(exc)
-	{
-		fmv->set_exc(true);
-		fmv->set_excflags();
-	}
-
 	//main loop start
 	cout << "enter the main loop" << endl;
 	
 	bool changedt=false;						//if dt changed or not
 	bool hform=false;							//horizon formation
-	bool excf=false;							//excision is acting or not
 	
 	for(int step=1;step<mstep+1;step++)
 	{
@@ -377,7 +402,6 @@ int main(int argc,char* argv[])
 			//fmv->print_z(filez,0,0);
 			break;
 		}	
-		
 		
 		//output judge start
 		bool printflag=false;
@@ -432,6 +456,7 @@ int main(int argc,char* argv[])
 		}
 		#pragma omp barrier
 		
+		//checking constraint in the highest layer start
 		if(ln!=0)
 		{
 			int lni=ln;
@@ -449,6 +474,7 @@ int main(int argc,char* argv[])
 			<< " r=" << fmv0[lni]->get_z(fmv0[lni]->get_lmm())
 			<< endl << endl;
 		}
+		//checking constraint in the highest layer end
 
 		//time forward start
 		t=fmv->get_t()+fmv->get_dt0();
@@ -468,65 +494,60 @@ int main(int argc,char* argv[])
 		}
 		//time forward end
 		
-		//checking horizon formation and excision
-		if(!hform || step%100==0)
+		//checking horizon formation (future outer trapped region) and excision start
+		if(step%horicheckintv==0)
 		{
 			//NOTE: it might be found in not highest layer
 			//      then the higher layer will be removed
 			for(int i=ln;i>=0;i--)
 			{
 				fmv0[i]->check_horizon(filehorizon);
-			
-				if(fmv0[i]->get_hform())
+
+				if(!hform)
 				{
-					if(!hform)
+					if(fmv0[i]->get_hform())
 					{
-						fileall.open(file_continue, ios::out );
-						fileall.setf(ios_base::scientific, ios_base::floatfield);
-						fileall.precision(10);
-						
-						for(int i=0;i<=ln;i++)
-						{	
-							fmv0[i]->setv0();
-							fmv0[i]->print_all(fileall);
-						}
-									
-						fileall.close();
 						hform=true;
+						printflag=true;
+						ln=i;							//reset the highest layer
+						laymax=ln;
+
+						if(i!=0)
+						fmv1[ln-1]->set_mrf(false);		//reset the mesh-refinement flag
+
+							cout << "future outer trapped region found t="<< t << endl
+							<< "layer number=" << i << endl;
+					}
+
+					if(fmv0[i]->get_exc())
+					{
+						if(!exc)
+						{
+							exc=true;
+							
+							cout << "excision start t="<< t << endl
+							<< "excision layer number=" << i << endl;
+
+						}
 					}
 					break;
 				}
 			}
-
-			if(!excf)
-			{
-				for(int i=ln;i>=0;i--)
-				{
-					//if horizon has been found and excision has been done 
-					if(fmv0[i]->get_exc())
-					{
-						excf=true;
-						ln=i;							//reset the highest layer
-
-						if(i!=0)
-						fmv1[ln-1]->set_mrf(false);		//reset the mesh-refinement flag
-					}
-				}
-			}
 		}
+		//checking horizon formation (future outer trapped region) and excision end
 
-		//adding another layer if criterion is met
-		if(ln<laymax && !excf)
+		//adding another layer if criterion is met start
+		if(ln<laymax && exc==0)
 		{	
-			//criterion (value of the laps at the center
+			//criterion (value of the lapse at the center)
 			if(fmv->get_bv(0,0,0,0)<alp_fmr[ln])
 			{
-				fmv->print_bz(filez,0,0);
+				// fmv->print_bz(filez,0,0);
 			
-				for(int i=0;i<ln;i++)
-				{
-					fmv1[i]->print_bz(filez,0,0);
-				}
+				// for(int i=0;i<ln;i++)
+				// {
+				// 	fmv1[i]->print_bz(filez,0,0);
+				// }
 
 				fmv0[ln]->set_llmin(lbs[ln]);
 				xmax*=0.5;
@@ -544,18 +565,20 @@ int main(int argc,char* argv[])
 				cout << "fmr layer #" << ln << " start" << endl;
 			}
 		}
+		//adding another layer if criterion is met end
 		
+		//printing all data files start
 		if(printflag)
 		{
-			fileall.open(file_continue, ios::out );
- 			fileall.setf(ios_base::scientific, ios_base::floatfield);
-			fileall.precision(10);
-			fileall << "##ln=" << ln << endl;
- 			cout <<"##ln=" << ln << endl;
+			fileall.open("out_all.dat", ios::out );
+
+			output_params(fileall,fld,scl,exc,exg,tab,nzmax,laymax,ln,lbs);
+ 			
  			for(int i=0;i<=ln;i++)
 			 fmv0[i]->print_all(fileall);
 			fileall.close();
 		}
+		//printing all data files end
 	}
 	//main loop end
 	
@@ -572,9 +595,7 @@ int main(int argc,char* argv[])
 	//	<< endl;
 	
 	//continue plot start
-	fileall.open(file_continue, ios::out );
-	fileall.setf(ios_base::scientific, ios_base::floatfield);
-	fileall.precision(10);
+	fileall.open("out_all.dat", ios::out );
 	for(int i=0;i<=ln;i++)
 	{	
 		fmv0[i]->setv0();
@@ -604,7 +625,6 @@ double& etab,
 double& etabb,
 double& KOep, 
 int& exg, 
-int& exc, 
 int& contn, 
 char *file_continue, 
 double& inr, 
@@ -619,7 +639,8 @@ double& Mkap,
 double& bminmod,
 double& ptintval1,
 double& ptintval2,
-double& changept
+double& changept,
+int& horicheckintv
 ){
 	string buf;
 	char cp[100];
@@ -696,10 +717,6 @@ double& changept
 	getline(fin, buf);
 	if((buf[0]!='#')&&(!buf.empty())){
 		sscanf(buf.c_str(),"%d %s",&exg,cp);
-	}
-	getline(fin, buf);
-	if((buf[0]!='#')&&(!buf.empty())){
-		sscanf(buf.c_str(),"%d %s",&exc,cp);
 	}
 	getline(fin, buf);
 
@@ -779,6 +796,10 @@ double& changept
 	if((buf[0]!='#')&&(!buf.empty())){
 		sscanf(buf.c_str(),"%lf %s",&changept,cp);
 	}
+	getline(fin, buf);
+	if((buf[0]!='#')&&(!buf.empty())){
+		sscanf(buf.c_str(),"%d %s",&horicheckintv,cp);
+	}
 	return;
 }
 
@@ -829,3 +850,128 @@ double *alp_fmr								//values of the lapse for starting fmr
 	return;
 }
 
+
+void check_continue_file(					//checking parameter consistency with the continue file
+ifstream& fcontinue, 						//initial parameter file
+bool& fld,									//for fluid evolution 
+bool& scl,									//for scalar evolution
+int& exc,									//excision
+int& exg,									//excision grid
+int& tab, 									//tab num for buf grids
+int& nzmax, 								//max grid num of z
+int& laymax,								//max fmr layer number
+int& ln,									//fmr layer number
+int *lbs									//grid number for fmr region on z-axis
+){
+		string buf;
+		//file preparateion end
+		int cpar;
+		//get the parameters of the continue file
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##fld=%d",&cpar);
+		if(cpar!=fld)
+		{
+			cout << "fld is different from the initial data file" << endl
+				<< "fld in data file=" << cpar << endl
+				<< "fld in par_ini.d=" << tab << endl;
+			exit(1);
+		}
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##scl=%d",&cpar);
+		if(cpar!=scl)
+		{
+			cout << "scl is different from the initial data file" << endl
+				<< "scl in data file=" << cpar << endl
+				<< "scl in par_ini.d=" << tab << endl;
+			exit(1);
+		}
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##exc=%d",&cpar);
+		exc=cpar;
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##exg=%d",&cpar);
+		if(cpar>=exg)
+		{
+			cout << "exg is larger in initial data file" << endl
+				<< "exg in data file=" << cpar << endl
+				<< "exg in par_ini.d=" << exg << endl;
+			exit(1);
+		}
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##tab=%d",&cpar);
+		if(cpar!=tab)
+		{
+			cout << "tab is different from the initial data file" << endl
+				<< "tab in data file=" << cpar << endl
+				<< "tab in par_ini.d=" << tab << endl;
+			exit(1);
+		}
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##nzmax=%d",&cpar);
+		if(cpar!=nzmax)
+		{
+			cout << "nzmax is different from the initial data file" << endl
+				<< "nzmax in data file=" << cpar << endl
+				<< "nzmax in par_ini.d=" << tab << endl;
+			exit(1);
+		}
+		getline(fcontinue, buf);
+		cout << buf << endl;
+		sscanf(buf.data(),"##ln=%d",&cpar);
+		if(cpar>laymax)
+		{
+			cout << "ln is larger than laymax" << endl
+				<< "ln in data file=" << cpar << endl
+				<< "laymax in par_fmr.d=" << laymax << endl;
+			exit(1);
+		}
+		ln=cpar;
+		for(int i=0;i<ln;i++)
+		{
+			getline(fcontinue, buf);
+			cout << buf << endl;
+			sscanf(buf.data(),"##fmrzgnum=%d",&cpar);
+			if(cpar!=lbs[i])
+			{
+				cout << i+1 << "-th fmrzgnum is different from the initial data file" << endl 
+					<< "fmrzgnum in data file=" << cpar << endl
+					<< "fmrzgnum in par_ini.d=" << tab << endl;
+			exit(1);
+			}
+		}
+	return;
+}
+
+
+void output_params(							//output all needed parameters for continue
+ofstream& fileall, 							//initial parameter file
+bool& fld,									//for fluid evolution 
+bool& scl,									//for scalar evolution
+int& exc,									//excision
+int& exg,									//excision grid
+int& tab, 									//tab num for buf grids
+int& nzmax, 								//max grid num of z
+int& laymax,								//max fmr layer number
+int& ln,									//fmr layer number
+int *lbs									//grid number for fmr region on z-axis
+){
+	fileall.setf(ios_base::scientific, ios_base::floatfield);
+	fileall.precision(10);
+	fileall 
+	<< "##fld="<< fld << endl
+	<< "##scl="<< scl << endl
+	<< "##exc="<< exc << endl
+	<< "##exg="<< exg << endl
+	<< "##tab="<< tab << endl
+	<< "##nzmax="<< nzmax << endl
+	<< "##ln="<< ln << endl;
+	for(int i=0;i<ln;i++)
+	fileall << "##fmrzgnum="<< lbs[i] << endl;
+
+}

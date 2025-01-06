@@ -26,7 +26,7 @@
 ###  initial data parameter
 ##################################################################################
 0	            # 0:no contnue 1:continue
-out_all.dat	    # continue file
+ini_all.dat	    # continue file
 0.8	            # inr  parameter for the smoothing function
 1.0	            # outr parameter for the smoothing function
 0.5	            # amplitude 

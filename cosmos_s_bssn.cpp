@@ -877,10 +877,10 @@ void Fmv0::BSSN(int itype)
 			
 			/////////////////////////////// Kodama mass and Area rad start ///////////////////////////////////
 			double gxx_z=get_f_z(l,k,j,7);																	//
-			double comfac=dfz/alpha_p*sqrt(gxx_p/gzz_p);
-			double Kt=-comfac*((2.*wa_z_p+0.5*gxx_z/gxx_p)*Z/dfz+1.);
-			double Kr=comfac*Z*(2.*get_dbv(l,k,j,13)+0.5*get_dbv(l,k,j,7)/gxx_p);
-			double dM=pi4*pow(Z,2)*exp(6.*wa_p)*gxx_p*sqrt(gzz_p)/dfz*(dfz*(-Ene*alpha_p+bz_p*p_z)*Kt+p_z*Kr);
+			// double comfac=dfz/alpha_p*sqrt(gxx_p/gzz_p);
+			// double Kt=-comfac*((2.*wa_z_p+0.5*gxx_z/gxx_p)*Z/dfz+1.);
+			// double Kr=comfac*Z*(2.*get_dbv(l,k,j,13)+0.5*get_dbv(l,k,j,7)/gxx_p);
+			// double dM=pi4*pow(Z,2)*exp(6.*wa_p)*gxx_p*sqrt(gzz_p)/dfz*(dfz*(-Ene*alpha_p+bz_p*p_z)*Kt+p_z*Kr);
 			double gamZZ=gzz_p/(ewa4i*dfz*dfz);
 			double gtt=-pow(alpha_p,-2);
 			double gtr=dfz*bz_p*pow(alpha_p,-2);
@@ -890,11 +890,17 @@ void Fmv0::BSSN(int itype)
 			double drR=exp(2.*wa_p)*sqrt(gxx_p)*((2.*wa_z_p+0.5*gxx_z/gxx_p)*Z/dfz+1.);
 			double Rad=Z*exp(2.*wa_p)*sqrt(gxx_p);
 			double M=0.5*Rad*(1.-gtt*pow(dtR,2)-grr*pow(drR,2)-2.*gtr*dtR*drR);
-			double dR=Rad*(dfz/Z+2.*wa_z_p+0.5*gxx_z/gxx_p);
+			// double dR=Rad*(dfz/Z+2.*wa_z_p+0.5*gxx_z/gxx_p);
 			
-			set_outv(l,k,j,4)=dM;
+			double kt=exp(2.*wa_p)*sqrt(gzz_p);
+			double kzp=(-kt*bz_p+alpha_p)*dfz;
+			double kzm=(-kt*bz_p-alpha_p)*dfz;
+
+			// set_outv(l,k,j,4)=dM;
+			set_outv(l,k,j,4)=kt*dtR+kzp*drR;
 			set_outv(l,k,j,5)=Rad;
-			set_outv(l,k,j,6)=dR;
+			// set_outv(l,k,j,6)=dR;
+			set_outv(l,k,j,6)=kt*dtR+kzm*drR;
 			set_outv(l,k,j,9)=M;																			//
 			/////////////////////////////// Kodama mass and Area rad end    //////////////////////////////////
 			

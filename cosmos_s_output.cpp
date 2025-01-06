@@ -65,8 +65,10 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 		double M_z,nM_z,dGamz;
 		double alp,hamn,ham;
 		double Kinv;
-		double Arad,dM,dR;
-		double eneratio;
+		double Arad;
+		// double dM,dR;
+		double null_exp_p,null_exp_m;
+		// double eneratio;
 		double Mass,Comp;
 		
 		alp= get_bv0(l,k,j, 0);
@@ -103,8 +105,10 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 		
 		Kinv=get_outv(l,k,j,0);
 		
-		dM=get_outv(l,k,j,4);
-		dR=get_outv(l,k,j,6);
+		//dM=get_outv(l,k,j,4);
+		//dR=get_outv(l,k,j,6);
+		null_exp_p=get_outv(l,k,j,4);
+		null_exp_m=get_outv(l,k,j,6);
 		Mass=get_outv(l,k,j,9);
 		
 		if(l<=lui)
@@ -118,10 +122,10 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 		else
 		Comp=2.*Mass/Arad;
 		
-		if(l>lui)
-		eneratio=0.;
-		else
-		eneratio=(dM/dR)/(pi4*pow(Arad,2)*rhobg)-1.;
+		// if(l>lui)
+		// eneratio=0.;
+		// else
+		// eneratio=(dM/dR)/(pi4*pow(Arad,2)*rhobg)-1.;
 		
 		fout.setf(ios_base::fixed, ios_base::floatfield);
 		fout.precision(16);
@@ -159,7 +163,8 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 		<< " "  << setw(20) << Kinv					//32
 		<< " "  << setw(20) << Arad					//33
 		<< " "  << setw(20) << Comp					//34
-		<< " "  << setw(20) << eneratio;			//35
+		<< " "  << setw(20) << null_exp_p			//35
+		<< " "  << setw(20) << null_exp_m;			//36
 																								//
 		/////////////// output for geometry end //////////////////////////////////////////////////
 
@@ -181,16 +186,16 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 			eps=  get_primv(l,k,j,4);
 			
 			fout 
-			<< " "  << setw(20) << Ene			//36
-			<< " "  << setw(20) << px			//37
-			<< " "  << setw(20) << py			//38
-			<< " "  << setw(20) << pz			//39
-			<< " "  << setw(20) << Den			//40
-			<< " "  << setw(20) << rho/rhobg	//41
-			<< " "  << setw(20) << Vx			//42
-			<< " "  << setw(20) << Vy			//43
-			<< " "  << setw(20) << Vz			//44
-			<< " "  << setw(20) << eps;			//45
+			<< " "  << setw(20) << Ene			//37
+			<< " "  << setw(20) << px			//38
+			<< " "  << setw(20) << py			//39
+			<< " "  << setw(20) << pz			//40
+			<< " "  << setw(20) << Den			//41
+			<< " "  << setw(20) << rho/rhobg	//42
+			<< " "  << setw(20) << Vx			//43
+			<< " "  << setw(20) << Vy			//44
+			<< " "  << setw(20) << Vz			//45
+			<< " "  << setw(20) << eps;			//46
 		}																						//
 		/////////////// output for fluid end   ///////////////////////////////////////////////////
 		
@@ -204,10 +209,10 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 			double sp_z=get_outv(l,k,j,8);
 			
 			fout
-			<< " "  << setw(20) << phii				//46	//36
-			<< " "  << setw(20) << Pi				//47	//37
-			<< " "  << setw(20) << rEne				//48	//38
-			<< " "  << setw(20) << sp_z;			//49	//39
+			<< " "  << setw(20) << phii				//47	//37
+			<< " "  << setw(20) << Pi				//48	//38
+			<< " "  << setw(20) << rEne				//49	//39
+			<< " "  << setw(20) << sp_z;			//50	//40
 		}																						//
 		/////////////// output for scalar end  ///////////////////////////////////////////////////
 		
@@ -401,8 +406,10 @@ void Fmv0::print_bz(ofstream& fout, int j, int k)
 		double M_z,nM_z,dGamz;
 		double alp,hamn,ham;
 		double Kinv;
-		double Arad,dM,dR;
-		double eneratio;
+		double Arad;
+		// double dM,dR;
+		double null_exp_p,null_exp_m;
+		// double eneratio;
 		double Mass,Comp;
 		
 		alp= get_bv(l,k,j, 0);
@@ -438,8 +445,10 @@ void Fmv0::print_bz(ofstream& fout, int j, int k)
 		
 		Kinv=get_outv(l,k,j,0);
 		
-		dM=get_outv(l,k,j,4);
-		dR=get_outv(l,k,j,6);
+		null_exp_p=get_outv(l,k,j,4);
+		null_exp_m=get_outv(l,k,j,6);
+		// dM=get_outv(l,k,j,4);
+		// dR=get_outv(l,k,j,6);
 		Mass=get_outv(l,k,j,9);
 		
 		if(l<=lui)
@@ -452,10 +461,10 @@ void Fmv0::print_bz(ofstream& fout, int j, int k)
 		else
 		Comp=2.*Mass/Arad;
 		
-		if(l>lui)
-		eneratio=0.;
-		else
-		eneratio=(dM/dR)/(pi4*pow(Arad,2)*rhobg)-1.;
+		// if(l>lui)
+		// eneratio=0.;
+		// else
+		// eneratio=(dM/dR)/(pi4*pow(Arad,2)*rhobg)-1.;
 		
 		fout.setf(ios_base::fixed, ios_base::floatfield);
 		fout.precision(16);
@@ -493,7 +502,8 @@ void Fmv0::print_bz(ofstream& fout, int j, int k)
 		<< " "  << setw(20) << Kinv					//32
 		<< " "  << setw(20) << Arad					//33
 		<< " "  << setw(20) << Comp					//34
-		<< " "  << setw(20) << eneratio;			//35
+		<< " "  << setw(20) << null_exp_p			//35
+		<< " "  << setw(20) << null_exp_m;			//36
 																								//
 		/////////////// output for geometry end //////////////////////////////////////////////////
 
@@ -515,16 +525,16 @@ void Fmv0::print_bz(ofstream& fout, int j, int k)
 			eps=  get_primv(l,k,j,4);
 			
 			fout 
-			<< " "  << setw(20) << Ene		//36
-			<< " "  << setw(20) << px		//37
-			<< " "  << setw(20) << py		//38
-			<< " "  << setw(20) << pz		//39
-			<< " "  << setw(20) << Den		//40
-			<< " "  << setw(20) << rho/rhobg	//41
-			<< " "  << setw(20) << Vx		//42
-			<< " "  << setw(20) << Vy		//43
-			<< " "  << setw(20) << Vz		//44
-			<< " "  << setw(20) << eps;		//45
+			<< " "  << setw(20) << Ene		//37
+			<< " "  << setw(20) << px		//38
+			<< " "  << setw(20) << py		//39
+			<< " "  << setw(20) << pz		//40
+			<< " "  << setw(20) << Den		//41
+			<< " "  << setw(20) << rho/rhobg	//42
+			<< " "  << setw(20) << Vx		//43
+			<< " "  << setw(20) << Vy		//44
+			<< " "  << setw(20) << Vz		//45
+			<< " "  << setw(20) << eps;		//46
 		}											//
 		/////////////// output for fluid end   ///////////////////////////////////////////////////
 		
@@ -537,10 +547,10 @@ void Fmv0::print_bz(ofstream& fout, int j, int k)
 			double sp_z=get_outv(l,k,j,8);
 			
 			fout
-			<< " "  << setw(20) << phii			//46	//36
-			<< " "  << setw(20) << Pi			//47	//37
-			<< " "  << setw(20) << sEne/rhobg		//48	//38
-			<< " "  << setw(20) << sp_z;			//49	//39
+			<< " "  << setw(20) << phii			//47	//37
+			<< " "  << setw(20) << Pi			//48	//38
+			<< " "  << setw(20) << sEne/rhobg		//49	//39
+			<< " "  << setw(20) << sp_z;			//50	//40
 		}											//
 		/////////////// output for scalar end  ///////////////////////////////////////////////////
 		

@@ -47,6 +47,8 @@ protected:
 	int ipolo,ipolbufu,ipolbufl;						// order of interpolation
 	int exg;											// excision grid number
 	int hl;												// value of l just outside the horizon
+	int hn;												// number of horizons so far
+	int hnmax;
 
 	int layn;											// layer number
 	int negb;											// neglecting boundary grids
@@ -145,6 +147,7 @@ protected:
 	///////////////  supplements /////////////////////////////////////////////
 	bool *nonzero;										// flag for nonzero v on z-axis
 	bool *evod;											// even or odd variables at the center
+	double **horis;										// horizon radiuses
 	///////////////  supplements /////////////////////////////////////////////
 	
 public:
@@ -274,6 +277,8 @@ public:
 		negb=0;											// neglecting boundary grids
 		llmin=lli;										// minimum l for constraint check
 		hl=0;											// value of l just outside the horizon
+		hn=0;											// number of horizons
+		hnmax=10;										// max number of horizons
 		///////////////  parameters and temporary variables //////////////////////////////
 
 		///////////////  spatial coordinate intervals ////////////////////////////////////
@@ -472,6 +477,14 @@ public:
 		}																				//
 		///////////////  vectors for spline interpolation ////////////////////////////////
 
+		///////////////  horizon radius strage ///////////////////////////////////////////
+		horis = new double*[hnmax];
+		for(int i=0;i<hnmax;i++)
+		{
+			horis[i] = new double[2];
+		}																				//
+		///////////////  horizon radius strage ///////////////////////////////////////////
+
 		// @@@@@@@@@@@@   variables (BSSN +GAUGE +fluid +scalar)   @@@@@@@@@@@
 		//  0:alpha , 1:bx  ,  2:by  ,  3:bz   ,  -> Gauge
 		//  4:bbx ,  5:bby  ,  6:bbz , -> for hyper-Gamma driver
@@ -565,7 +578,17 @@ public:
 			evod[25]=true;
 		}																				//
 		///////////////  bool flags //////////////////////////////////////////////////////
-		
+
+		///////////////  horizon radius setting //////////////////////////////////////////
+		for(int i=0;i<2;i++)
+		{
+			for(int h=0;h<hnmax;h++)
+			{
+				horis[h][i]=10.;
+			}
+		}																				//
+		///////////////  horizon radius setting //////////////////////////////////////////
+	
 		set_zero_all();
 
 		for(int l=lmin;l<=lmax;l++){
@@ -1964,80 +1987,236 @@ public:
 	void check_horizon(ofstream& fout)
 	{
 		double Comp=0.,Arad=0.;
-		
+		double temphr[hnmax][2];
+		int hnc=0;
+
+		for(int h=0;h<hnmax;h++)
+		{
+			temphr[h][0]=10.;
+			temphr[h][1]=10.;
+		}
+
 		for(int l=llmin;l<=lui;l++)
 		{
 			int k=0;
 			int j=0;
 			
-			if(get_hflag(l+2,k,j)==1 && exc==true)
-			continue;
-			
-			double preArad,preComp;
+			double preArad,prerad,preComp,rad;
 			double Mass;
 			
 			Mass=get_outv(l,k,j,9);
 			preArad=Arad;
+			prerad=get_z(l-1);
 			Arad=get_outv(l,k,j,5);
+			rad=get_z(l);
 			preComp=Comp;
 			
 			if(l==lli)
 			Comp=0.;
 			else
 			Comp=2.*Mass/Arad;
-			
-			if(Comp<1. && preComp>1.)
+
+			if(get_hflag(l-1,k,j)==1 && exc==true)
+			continue;
+
+			if((1.-Comp)*(1.-preComp)<=0.)
 			{
-				if(hform==false) 
-				{	
-					cout << "layn="
-						<< layn
-						<< " horizon formation t="
-						<< get_t()
-						<< " l=" 
-						<< l << endl;
+				//cout << "horizon found" << endl;
 				
-					fout << "layn="
-						<< layn
-						<< "#horizon formation t="
-						<< get_t()
-						<< " l=" 
-						<< l << endl;
-					
-					hform=true;
-					hl=l;
-				}
-				
-				set_hflag_zero();
-				
-				for(int ll=lli;ll<l;ll++)
+				if(hnc+1>=hnmax)
 				{
-					set_hflag(ll,k,j)=1;
+					cout << "too many horizons" << endl;
+					exit(1);
 				}
-				
-				
-				fout.setf(ios_base::fixed, ios_base::floatfield);
-				fout.precision(16);
-				fout << setw(20) << get_t()							//1
-				<< " "  << setw(20) << 0.5*(preArad+(Arad-preArad)*(preComp-1.)/(preComp-Comp))	//2
-				<< endl;
+				else
+				{
+					temphr[hnc][0]=(prerad+(rad-prerad)*(preComp-1.)/(preComp-Comp));
+					temphr[hnc][1]=(preArad+(Arad-preArad)*(preComp-1.)/(preComp-Comp));
+					hnc++;
+				}
 			}
 			
-			if(exc==false && exg!=0) 
+			if(hform==false)
 			{
-				if(Comp<1.05 && preComp>1.05)
+				if(get_outv(l,k,j,4)<0. && get_outv(l,k,j,6)<0.)
 				{
-					cout << "excision start t="
-						<< get_t()
-						<< " l=" 
-						<< l << endl;
-				
-					exc=true;	
-					set_excflags();
-					break;
+					hform=true;
+
+					if(exc==false && exg!=0) 
+					{
+						exc=true;
+						set_excflags();
+
+						for(int ll=lli;ll<l;ll++)
+						{
+							set_hflag(ll,k,j)=1;
+						}
+					}
 				}
 			}
 		}
+
+		double devs[hnmax];
+		int hcpn[hnmax];
+		int noashc=0;
+		for(int h=0;h<hnmax;h++)
+		{
+			devs[h]=999999999.;
+			hcpn[h]=hnmax;
+		}
+		
+		for(int hc=0;hc<hnc;hc++)
+		{
+			int hpsqn=hnmax;	
+			int hpsqn2=hnmax;	
+			double dev=999999999.;
+			double dev2=999999999.;
+			
+			for(int hp=0;hp<hn;hp++)
+			{
+				if(horis[hp][0]>1.)
+				continue;
+				
+				double devtemp=abs(temphr[hc][0]-horis[hp][0]);
+				if(devtemp<dev)
+				{
+					dev2=dev;
+					hpsqn2=hpsqn;
+					dev=devtemp;
+					hpsqn=hp;
+					// cout << "hsqn=hp" << hsqn << "=" << hp << endl;
+					// exit(0);
+				}
+			}
+
+			if(dev<devs[hpsqn])
+			{
+				if(hcpn[hpsqn]!=hnmax)
+				{
+					int hcc=hcpn[hpsqn];
+					double devv=999999999.;
+					int hpsqnn=hnmax;
+					for(int hpp=0;hpp<hn;hpp++)
+					{
+						if(hpp==hpsqn)
+						continue;
+
+						double devtemp=abs(temphr[hcc][0]-horis[hpp][0]);
+						if(devtemp<devv)
+						{
+							devv=devtemp;
+							hpsqnn=hpp;
+						}
+					}
+
+					if(devv<devs[hpsqnn])
+					{
+						if(hcpn[hpsqnn]!=hnmax)
+						{
+							hcpn[hn+noashc]=hcpn[hpsqnn];
+							devs[hn+noashc]=0.;
+							noashc++;
+
+							cout << "new horizon 1" << endl;
+							if(hn+noashc>=hnmax)
+							{
+								cout << "too many horizons 1" << endl;
+								noashc--;
+							}
+						}
+
+						devs[hpsqnn]=devv;
+						hcpn[hpsqnn]=hcc;
+					}
+					else
+					{
+						hcpn[hn+noashc]=hcc;
+						devs[hn+noashc]=0.;
+						noashc++;
+						cout << "new horizon 2" << endl;
+						if(hn+noashc>=hnmax)
+						{
+							cout << "too many horizons 2" << endl;
+							noashc--;
+						}
+					}
+				}
+				
+				devs[hpsqn]=dev;
+				hcpn[hpsqn]=hc;
+			}
+			else if(dev2<devs[hpsqn2])
+			{
+				if(hcpn[hpsqn2]!=hnmax)
+				{
+					hcpn[hn+noashc]=hcpn[hpsqn2];
+					devs[hn+noashc]=0.;
+					noashc++;
+					cout << "new horizon 3" << endl;
+
+					if(hn+noashc>=hnmax)
+					{
+						cout << "too many horizons 3" << endl;
+						noashc--;
+					}
+				}
+				devs[hpsqn2]=dev2;
+				hcpn[hpsqn2]=hc;
+			}
+			else
+			{
+				hcpn[hn+noashc]=hc;
+				devs[hn+noashc]=0.;
+				noashc++;
+				cout << "new horizon 4" << endl;
+
+				if(hn+noashc>=hnmax)
+				{
+					cout << "too many horizons 4" << endl;
+					noashc--;
+				}
+			}
+		}
+
+		if(noashc>0)
+		{
+			hn=hn+noashc;
+			cout << "hn=" << hn << endl;
+		}
+
+		fout.setf(ios_base::fixed, ios_base::floatfield);
+		fout.precision(16);
+		fout << setw(20) << get_t();							//1
+
+		for(int h=0;h<hnmax;h++)
+		{
+			if(hcpn[h]<hnmax && temphr[hcpn[h]][0]<1.)
+			{
+				//cout << "horis substituted" << endl;
+				horis[h][0]=temphr[hcpn[h]][0];
+				horis[h][1]=temphr[hcpn[h]][1];
+			}
+			else
+			{
+				horis[h][0]=10.;
+				horis[h][1]=10.;
+			}
+
+			if(horis[h][0]>1.)
+			{
+				fout 
+				<< " "  << setw(20) << "-"
+				<< " "  << setw(20) << "-";	//2
+			}
+			else
+			{
+				fout 
+				<< " "  << setw(20) << horis[h][0] 
+				<< " "  << setw(20) << horis[h][1];
+			}
+		}
+		fout << endl;
+		
 		return;
 	}
 
