@@ -2094,7 +2094,7 @@ public:
 					int hpsqnn=hnmax;
 					for(int hpp=0;hpp<hn;hpp++)
 					{
-						if(hpp==hpsqn)
+						if(hpp==hpsqn || horis[hpp][0]>1.)
 						continue;
 
 						double devtemp=abs(temphr[hcc][0]-horis[hpp][0]);
