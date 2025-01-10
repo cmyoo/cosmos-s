@@ -2550,50 +2550,15 @@ public:
 };
 
 class Fmv : public Fmv0{
-// private: 
-// 	int laymax;
-// 	bool *mrflag;
-// 	int *lbs;
-// 	double *alp_fmr;
 
 public:
 	Fmv(int tabs,int tabsx,int lupper,
 	double xupper,double zupper,double am,bool fld, bool scl, bool cuev) : Fmv0(tabs,tabsx,lupper,
 	xupper,zupper,am,fld, scl, cuev){
 		layn=0;
-		// laymax=laynum;
-		
-		// mrflag = new bool[laymax+1];
-		// lbs = new int[laymax+1];
-		// alp_fmr = new double[laymax+1];
-		
-		// for(int n=0;n<=laymax;n++)
-		// {
-		// 	mrflag[n]=false;
-		// 	lbs[n]=0;
-		// }
 	}
 
  public:
-// 	bool get_mrflag(int n) const{
-// 		return mrflag[n];
-// 	}
-// 	int get_lbs(int n) const{
-// 		return lbs[n];
-// 	}
-// 	double get_alp_fmr(int n) const{
-// 		return alp_fmr[n];
-// 	}
-	
-// 	bool& set_mrflag(int n){
-// 		return mrflag[n];
-// 	}
-// 	int& set_lbs(int n){
-// 		return lbs[n];
-// 	}
-// 	double& set_alp_fmr(int n){
-// 		return alp_fmr[n];
-// 	}
 
 	////////////////////////////////////////
 	//  BOUNDARY func.
