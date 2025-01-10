@@ -227,10 +227,10 @@ int main(int argc,char* argv[])
 
 	ofstream fileconst("out_const.dat");					//constrain evolution
 
-	ofstream filehorizon[laymax];							//horizon evolution for each layer
+	ofstream filehorizon[laymax+1];							//horizon evolution for each layer
 	filehorizon[0].open("out_horizon_00.dat");				//horizon evolution for the first layer
 	
-	//ofstream fileneck[laymax];							//neck evolution for each layer
+	//ofstream fileneck[laymax+1];							//neck evolution for each layer
 	//fileneck[0].open("out_neck_00.dat");					//neck evolution for the first layer
 	
 	ofstream fileall;										//for all variables to continue
@@ -283,7 +283,7 @@ int main(int argc,char* argv[])
 			snprintf(buff,sizeof(buff),"out_horizon_%02d.dat",i+1);
 			filehorizon[i+1].open(buff);
 			//snprintf(buff,sizeof(buff),"out_neck_%02d.dat",i+1);
-			//fileneck[i].open(buff);
+			//fileneck[i+1].open(buff);
 
 			getline(fcontinue, buf);
 			getline(fcontinue, buf);
