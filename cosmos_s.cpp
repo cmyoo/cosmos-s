@@ -281,7 +281,7 @@ int main(int argc,char* argv[])
 
 			char buff[100];
 			snprintf(buff,sizeof(buff),"out_horizon_%02d.dat",i+1);
-			filehorizon[i].open(buff);
+			filehorizon[i+1].open(buff);
 			//snprintf(buff,sizeof(buff),"out_neck_%02d.dat",i+1);
 			//fileneck[i].open(buff);
 
