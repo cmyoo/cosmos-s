@@ -14,7 +14,7 @@
 //not accurate enough and the constraint violation propagates inward
 //the propagation can be easily checked by the momentum constraint violation
 
-void Fmv0::asymcond(int l,int i,double bgv)
+void Fmv::asymcond(int l,int i,double bgv)
 {
 	//xx, yy, rr are assumed to be X,Y,Z in Cartesian coord.
 	double R=funcf(get_z(l));
@@ -37,7 +37,7 @@ void Fmv0::asymcond(int l,int i,double bgv)
 }
 
 
-void Fmv0::asymcond(int l,int i,double bgv1,double bgv,double dtime,int itype)
+void Fmv::asymcond(int l,int i,double bgv1,double bgv,double dtime,int itype)
 {
 	//xx, yy, rr are assumed to be X,Y,Z in Cartesian coord.
 	double R=funcf(get_z(l));
@@ -73,7 +73,7 @@ void Fmv0::asymcond(int l,int i,double bgv1,double bgv,double dtime,int itype)
 	
 }
 
-void Fmv0::boundary_asym(int itype)
+void Fmv::boundary_asym(int itype)
 {
 	double dtime;
 	double bgv1[nn],bgv[nn];

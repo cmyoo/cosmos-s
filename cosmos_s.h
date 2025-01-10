@@ -260,7 +260,7 @@ public:
 		// @@@@@@@@@@@@   constraints   @@@@@@@@@@@
 		//  0:normalized ham, 1:ham, 2:normalized momz, 3:momz, 4:Gamma^z-D_gamma^z
 		
-		nv=11;											// for output variables
+		nv=12;											// for output variables
 		///////////////  number of variables /////////////////////////////////////////////
 
 		///////////////  parameters and temporary variables //////////////////////////////
@@ -644,6 +644,15 @@ public:
 		delete[] alp_o;
 		delete[] bet_o;
 		delete[] gam_o;
+		
+		delete[] neck;
+	
+		for(int l=0;l<hnmax;l++){
+			delete[] horis[l];
+			horis[l]=NULL;
+		}
+		delete[] horis;
+		horis=NULL;
 		
 		for(int l=0;l<nn;l++){
 			delete[] ddy[l];
@@ -2258,7 +2267,7 @@ public:
 				continue;
 			}
 			else
-			drR=get_outv(l,k,j,0);
+			drR=get_outv(l,k,j,11);
 
 			if(get_hflag(l-1,k,j)==1 && exc==true)
 			continue;
@@ -2491,14 +2500,6 @@ public:
 	void flux_fill();
 	void excision();
 	void excision_quadfunc();
-
-	////////////////////////////////////////
-	//  BOUNDARY func.
-	////////////////////////////////////////
-	
-	void asymcond(int l,int i,double bgv0,double bgv,double dt,int itype);
-	void asymcond(int l,int i,double bgv);
-	void boundary_asym(int itype);
 	
 	////////////////////////////////////////
 	//  Initial func.
@@ -2514,19 +2515,7 @@ public:
 	void set_refz();
 	void set_Gam();
 	void set_enemomini();
-	void initial_iso_longwave(double mu,double k,double inr,double L);
-	void initial_longwave(double mu,double k,double inr,double L);
-	void set_initial_final();
 	void initial_params(double cfli,double etaai,double etabi,double etabbi,double lambdai,double dt0i,double dtpi,double dtppi,double ti,double tinii,double Hbi,double KOepi,int exgi,double fluidwi,double scalarmi,double kap_MUSCLi,double b_minmodi);
-
-	double Phi(double r,double mu,double kk, double inr, double L);
-	double dzPhi(double r,double mu,double kk, double inr, double L);
-	double ddzPhi(double r,double mu,double kk, double inr, double L);
-
-	double Psi(double r,double mu,double kk, double inr, double L);
-	double dzPsi(double r,double mu,double kk, double inr, double L);
-	double ddzPsi(double r,double mu,double kk, double inr, double L);
-	double dddzPsi(double r,double mu,double kk, double inr, double L);
 	
 	////////////////////////////////////////
 	//  OUTPUT func.
@@ -2546,14 +2535,14 @@ public:
 	
 	double funcV(double p)
 	{
-		double w=0.;
+		double w=0.5*pow(scalarm*p,2);
 		
 		return(w);
 	}
 	
 	double funcdV(double p)
 	{
-		double w=0.;
+		double w=pow(scalarm,2)*p;
 		
 		return(w);
 	}
@@ -2561,50 +2550,76 @@ public:
 };
 
 class Fmv : public Fmv0{
-private: 
-	int laymax;
-	bool *mrflag;
-	int *lbs;
-	double *alp_fmr;
+// private: 
+// 	int laymax;
+// 	bool *mrflag;
+// 	int *lbs;
+// 	double *alp_fmr;
 
 public:
 	Fmv(int tabs,int tabsx,int lupper,
-	double xupper,double zupper,double am,bool fld, bool scl, bool cuev,int laynum) : Fmv0(tabs,tabsx,lupper,
+	double xupper,double zupper,double am,bool fld, bool scl, bool cuev) : Fmv0(tabs,tabsx,lupper,
 	xupper,zupper,am,fld, scl, cuev){
 		layn=0;
-		laymax=laynum;
+		// laymax=laynum;
 		
-		mrflag = new bool[laymax+1];
-		lbs = new int[laymax+1];
-		alp_fmr = new double[laymax+1];
+		// mrflag = new bool[laymax+1];
+		// lbs = new int[laymax+1];
+		// alp_fmr = new double[laymax+1];
 		
-		for(int n=0;n<=laymax;n++)
-		{
-			mrflag[n]=false;
-			lbs[n]=0;
-		}
+		// for(int n=0;n<=laymax;n++)
+		// {
+		// 	mrflag[n]=false;
+		// 	lbs[n]=0;
+		// }
 	}
 
-public:
-	bool get_mrflag(int n) const{
-		return mrflag[n];
-	}
-	int get_lbs(int n) const{
-		return lbs[n];
-	}
-	double get_alp_fmr(int n) const{
-		return alp_fmr[n];
-	}
+ public:
+// 	bool get_mrflag(int n) const{
+// 		return mrflag[n];
+// 	}
+// 	int get_lbs(int n) const{
+// 		return lbs[n];
+// 	}
+// 	double get_alp_fmr(int n) const{
+// 		return alp_fmr[n];
+// 	}
 	
-	bool& set_mrflag(int n){
-		return mrflag[n];
-	}
-	int& set_lbs(int n){
-		return lbs[n];
-	}
-	double& set_alp_fmr(int n){
-		return alp_fmr[n];
-	}
+// 	bool& set_mrflag(int n){
+// 		return mrflag[n];
+// 	}
+// 	int& set_lbs(int n){
+// 		return lbs[n];
+// 	}
+// 	double& set_alp_fmr(int n){
+// 		return alp_fmr[n];
+// 	}
+
+	////////////////////////////////////////
+	//  BOUNDARY func.
+	////////////////////////////////////////
+	
+	void asymcond(int l,int i,double bgv0,double bgv,double dt,int itype);
+	void asymcond(int l,int i,double bgv);
+	void boundary_asym(int itype);
+
+	////////////////////////////////////////
+	//  func. for specific initial conditions
+	////////////////////////////////////////
+	void set_initial_final();
+	void base_initial_continue(ifstream& fcontinue);
+
+	void initial_iso_longwave(double mu,double k,double inr,double L);
+	void initial_longwave(double mu,double k,double inr,double L);
+	double Phi(double r,double mu,double kk, double inr, double L);
+	double dzPhi(double r,double mu,double kk, double inr, double L);
+	double ddzPhi(double r,double mu,double kk, double inr, double L);
+
+	double Psi(double r,double mu,double kk, double inr, double L);
+	double dzPsi(double r,double mu,double kk, double inr, double L);
+	double ddzPsi(double r,double mu,double kk, double inr, double L);
+	double dddzPsi(double r,double mu,double kk, double inr, double L);
+
 };
 
 
@@ -2644,6 +2659,8 @@ public:
 	void evolve();
 	void refine_llay();
 	void onestep(int btype);
+	void fmr_initial_continue(ifstream& fcontinue);
+
 };
 
 #endif

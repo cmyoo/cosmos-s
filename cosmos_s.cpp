@@ -201,7 +201,7 @@ int main(int argc,char* argv[])
 	
 	//main class for bssn
 	xmax=zmax/double(nzmax)/(1.+amp)*tab*xmax;
-	Fmv *fmv=new Fmv(tab,tab,nzmax,xmax,zmax,amp,fld,scl,cuev,1);
+	Fmv *fmv=new Fmv(tab,tab,nzmax,xmax,zmax,amp,fld,scl,cuev);
 	Fmv1 **fmv1;
 	Fmv0 **fmv0;
 	
@@ -211,7 +211,7 @@ int main(int argc,char* argv[])
 	fmv0[0]=fmv;
 	
 	//initial parameter setting start
-	double dr=fmv->get_dx();
+	double dr=fmv->get_dz();
 	double dtini=cfl*dr;
 	double lambda=0.;
 	double scalarm=0.;
@@ -253,7 +253,10 @@ int main(int argc,char* argv[])
 		//parameter consistency check
 		check_continue_file(fcontinue,fld,scl,exc,exg,tab,nzmax,laymax,ln,lbs);
 
-		fmv->initial_continue(fcontinue);
+		fmv->base_initial_continue(fcontinue);
+		// fmv->boundary_asym(0);
+		// fmv->dyntoprim();
+
 		cout << "continue" << endl;
 
 		string buf;
@@ -270,7 +273,9 @@ int main(int argc,char* argv[])
 			//initial setting for the upper layer start
 			double deltat=0.5*fmv0[i]->get_dt0();
 			fmv1[i]->initial_params(cfl,etaa,etab,etabb,lambda,deltat,deltat,deltat,t,tini,Hb,KOep,exg,fluidw,scalarm,Mkap,bminmod);
-			fmv1[i]->set_fmr_initial();					
+			fmv1[i]->fmr_initial_continue(fcontinue);
+			// fmv1[i]->boundary_fmr();
+			// fmv1[i]->dyntoprim();
 			cout << "initial setting done" << endl;
 			//initial setting for the upper layer end
 
@@ -280,9 +285,6 @@ int main(int argc,char* argv[])
 			//snprintf(buff,sizeof(buff),"out_neck_%02d.dat",i+1);
 			//fileneck[i].open(buff);
 
-			cout << "initial setting done" << endl;
-			
-			fmv1[i]->initial_continue(fcontinue);
 			getline(fcontinue, buf);
 			getline(fcontinue, buf);
 
@@ -597,7 +599,6 @@ int main(int argc,char* argv[])
 		if(printflag)
 		{
 			fileall.open("out_all.dat", ios::out );
-
 			output_params(fileall,fld,scl,exc,exg,tab,nzmax,laymax,ln,lbs);
  			
  			for(int i=0;i<=ln;i++)
@@ -622,6 +623,8 @@ int main(int argc,char* argv[])
 	
 	//continue plot start
 	fileall.open("out_all.dat", ios::out );
+	output_params(fileall,fld,scl,exc,exg,tab,nzmax,laymax,ln,lbs);
+
 	for(int i=0;i<=ln;i++)
 	{	
 		fmv0[i]->setv0();
@@ -931,7 +934,7 @@ int *lbs									//grid number for fmr region on z-axis
 		getline(fcontinue, buf);
 		cout << buf << endl;
 		sscanf(buf.data(),"##exg=%d",&cpar);
-		if(cpar>=exg)
+		if(cpar>exg)
 		{
 			cout << "exg is larger in initial data file" << endl
 				<< "exg in data file=" << cpar << endl

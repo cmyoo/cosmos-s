@@ -897,7 +897,7 @@ void Fmv0::BSSN(int itype)
 			double kzm=(-kt*bz_p-alpha_p)*dfz;
 
 			// set_outv(l,k,j,4)=dM;
-			set_outv(l,k,j,0)=drR;
+			set_outv(l,k,j,11)=drR;
 			set_outv(l,k,j,4)=kt*dtR+kzp*drR;
 			set_outv(l,k,j,5)=Rad;
 			// set_outv(l,k,j,6)=dR;
@@ -1056,7 +1056,7 @@ void Fmv0::BSSN(int itype)
 							+unRiem_yz_y*nRiem_yz_y))
 					+4.*(utanRiem_xyxy*tanRiem_xyxy+utanRiem_xzxz*tanRiem_xzxz+utanRiem_yzyz*tanRiem_yzyz);
 				
-				//set_outv(l,k,j,0)=Kinv;
+				set_outv(l,k,j,0)=Kinv;
 				
 				//upper RC_ij
 				//uRC_12=exp(4.*wa_p)*(gxx_p*utanRiem_x1x2+gyy_p*utanRiem_y1y2+gzz_p*utanRiem_z1z2

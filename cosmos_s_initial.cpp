@@ -13,7 +13,7 @@
 using namespace std;
 
 //initial setting for adiabatic cosmological long wavelength
-void Fmv0::initial_longwave(double mu,double kk,double inr,double L)
+void Fmv::initial_longwave(double mu,double kk,double inr,double L)
 {
 	//for spline interpolation
 	set_luvec();
@@ -215,7 +215,7 @@ void Fmv0::initial_longwave(double mu,double kk,double inr,double L)
 }
 
 //initial setting for iso curvature perturbation
-void Fmv0::initial_iso_longwave(double mus,double kks,double inr,double L)
+void Fmv::initial_iso_longwave(double mus,double kks,double inr,double L)
 {
 	//for spline interpolation
 	set_luvec();
@@ -374,7 +374,7 @@ void Fmv0::initial_iso_longwave(double mus,double kks,double inr,double L)
 	return;
 }
 
-void Fmv0::set_initial_final()
+void Fmv::set_initial_final()
 {
 	cout << "initial_final" << endl;
 
@@ -568,8 +568,11 @@ void Fmv0::initial_continue(ifstream& fcontinue)
 	
 	//initial setting
 	set_luvec();
+	#pragma omp barrier
 	set_flat();
+	#pragma omp barrier
 	set_refz();
+	#pragma omp barrier
 
 	string buf;
 	
@@ -861,8 +864,8 @@ void Fmv0::initial_continue(ifstream& fcontinue)
 		}
 	}
 	
-	boundary_asym(0);
-	dyntoprim();
+	// boundary_asym(0);
+	// dyntoprim();
 	
 	return;
 }
@@ -1928,7 +1931,7 @@ void Fmv0::set_enemomini()
 	return;
 }
 
-double Fmv0::Phi(double r,double mu,double kk,double inr,double L)
+double Fmv::Phi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -1943,7 +1946,7 @@ double Fmv0::Phi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
-double Fmv0::dzPhi(double r,double mu,double kk,double inr,double L)
+double Fmv::dzPhi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -1961,7 +1964,7 @@ double Fmv0::dzPhi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
-double Fmv0::ddzPhi(double r,double mu,double kk,double inr,double L)
+double Fmv::ddzPhi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -1981,7 +1984,7 @@ double Fmv0::ddzPhi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
-double Fmv0::Psi(double r,double mu,double kk,double inr,double L)
+double Fmv::Psi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -1998,7 +2001,7 @@ double Fmv0::Psi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
-double Fmv0::dzPsi(double r,double mu,double kk,double inr,double L)
+double Fmv::dzPsi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -2017,7 +2020,7 @@ double Fmv0::dzPsi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
-double Fmv0::ddzPsi(double r,double mu,double kk,double inr,double L)
+double Fmv::ddzPsi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -2046,7 +2049,7 @@ double Fmv0::ddzPsi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
-double Fmv0::dddzPsi(double r,double mu,double kk,double inr,double L)
+double Fmv::dddzPsi(double r,double mu,double kk,double inr,double L)
 {
 	double w;
 	
@@ -2106,5 +2109,13 @@ void Fmv0::initial_params(double cfli,double etaai,double etabi,double etabbi,do
 	kap_MUSCL=kap_MUSCLi;
 	b_minmod=b_minmodi;
 
+	return;
+}
+
+void Fmv::base_initial_continue(ifstream& fcontinue)
+{
+	initial_continue(fcontinue);
+	boundary_asym(0);
+	dyntoprim();
 	return;
 }

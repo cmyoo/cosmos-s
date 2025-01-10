@@ -94,22 +94,6 @@ void Fmv1::evolve()
 void Fmv1::set_fmr_initial()
 {
 	//initial parameter setting start
-	// cfl=llay->get_cfl();
-	// etaa=llay->get_etaa();
-	// etab=llay->get_etab();
-	// etabb=llay->get_etabb();
-	// lambda=llay->get_lambda();
-	// dt0=0.5*llay->get_dt0();
-	// dtp=dt0;
-	// dtpp=dt0;
-	// fluidw=llay->get_fluidw();
-	// t=llay->get_t();
-	// Hb=llay->get_Hb();
-	// tini=llay->get_tini();
-	// KOep=llay->get_KOep();
-	// exg=2*llay->get_exg();
-	// kap_MUSCL=llay->get_Mkap();
-	// b_minmod=llay->get_b();
 	negb=3;
 	mrf=false;
 	//initial parameter setting end
@@ -702,3 +686,15 @@ void Fmv1::boundary_fmr()
 	return;
 }
 
+void Fmv1::fmr_initial_continue(ifstream& fcontinue)
+{
+	//initial parameter setting start
+	negb=3;
+	mrf=false;
+	//initial parameter setting end
+
+	initial_continue(fcontinue);
+	boundary_fmr();
+	dyntoprim();
+	return;
+}
