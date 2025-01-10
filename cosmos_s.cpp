@@ -211,28 +211,15 @@ int main(int argc,char* argv[])
 	fmv0[0]=fmv;
 	
 	//initial parameter setting start
-	double dr=fmv->get_dz();
+	double dr=fmv->get_dx();
 	double dtini=cfl*dr;
-	fmv->set_cfl(cfl);
-	fmv->set_etaa(etaa);
-	fmv->set_etab(etab);
-	fmv->set_etabb(etabb);
-	fmv->set_lambda(0.);
-	fmv->set_tmax(tmax);
-	fmv->set_dt0(dtini);
-	fmv->set_dtp(dtini);
-	fmv->set_dtpp(dtini);
-	fmv->set_fluidw(fluidw);
-	t=2./(3.*(1+fluidw)*Hb);
-	fmv->set_t(t);
-	fmv->set_Hb(Hb);
-	fmv->set_tini(t);
-	fmv->set_KOep(KOep);
-	fmv->set_exg(exg);
-	fmv->set_Mkap(Mkap);
-	fmv->set_b(bminmod);
+	double lambda=0.;
+	double scalarm=0.;
+	double tini=2./(3.*(1+fluidw)*Hb);
+	t=tini;
+
+	fmv->initial_params(cfl,etaa,etab,etabb,lambda,dtini,dtini,dtini,t,t,Hb,KOep,exg,fluidw,scalarm,Mkap,bminmod);
 	//initial parameter setting end
-	
 	
 	//output files start
 	ofstream filez("out_jkz.dat");							//as functions of z on (j,k)
@@ -240,7 +227,11 @@ int main(int argc,char* argv[])
 
 	ofstream fileconst("out_const.dat");					//constrain evolution
 
-	ofstream filehorizon("out_horizon.dat");				//horizon evolution
+	ofstream filehorizon[laymax];							//horizon evolution for each layer
+	filehorizon[0].open("out_horizon_00.dat");				//horizon evolution for the first layer
+	
+	//ofstream fileneck[laymax];							//neck evolution for each layer
+	//fileneck[0].open("out_neck_00.dat");					//neck evolution for the first layer
 	
 	ofstream fileall;										//for all variables to continue
 	
@@ -275,7 +266,20 @@ int main(int argc,char* argv[])
 			xmax*=0.5;
 			fmv1[i]=new Fmv1(tab,tab,2*lbs[i],xmax,fmv0[i]->get_z(lbs[i]),amp,fld, scl, cuev, fmv0[i]);
 			fmv0[i+1]=fmv1[i];
-			fmv1[i]->set_fmr_initial();
+
+			//initial setting for the upper layer start
+			double deltat=0.5*fmv0[i]->get_dt0();
+			fmv1[i]->initial_params(cfl,etaa,etab,etabb,lambda,deltat,deltat,deltat,t,tini,Hb,KOep,exg,fluidw,scalarm,Mkap,bminmod);
+			fmv1[i]->set_fmr_initial();					
+			cout << "initial setting done" << endl;
+			//initial setting for the upper layer end
+
+			char buff[100];
+			snprintf(buff,sizeof(buff),"out_horizon_%02d.dat",i+1);
+			filehorizon[i].open(buff);
+			//snprintf(buff,sizeof(buff),"out_neck_%02d.dat",i+1);
+			//fileneck[i].open(buff);
+
 			cout << "initial setting done" << endl;
 			
 			fmv1[i]->initial_continue(fcontinue);
@@ -501,7 +505,8 @@ int main(int argc,char* argv[])
 			//      then the higher layer will be removed
 			for(int i=ln;i>=0;i--)
 			{
-				fmv0[i]->check_horizon(filehorizon);
+				fmv0[i]->check_horizon(filehorizon[i]);
+				//fmv0[i]->check_neck(fileneck[i]);
 
 				if(!hform)
 				{
@@ -509,14 +514,24 @@ int main(int argc,char* argv[])
 					{
 						hform=true;
 						printflag=true;
+
+						for(int ii=ln;ii>i;ii--)
+						{
+							delete fmv0[ii];
+							cout << "fmv0-" << ii << "delete" << endl;
+						}
+
 						ln=i;							//reset the highest layer
 						laymax=ln;
 
 						if(i!=0)
-						fmv1[ln-1]->set_mrf(false);		//reset the mesh-refinement flag
+						{
+							fmv1[ln-1]->set_mrf(false);		//reset the mesh-refinement flag
+							fmv1[ln-1]->set_llmin(fmv1[ln-1]->get_lli());
+						}
 
-							cout << "future outer trapped region found t="<< t << endl
-							<< "layer number=" << i << endl;
+						cout << "future trapped region found t="<< t << endl
+						<< "layer number=" << i << endl;
 					}
 
 					if(fmv0[i]->get_exc())
@@ -530,7 +545,6 @@ int main(int argc,char* argv[])
 
 						}
 					}
-					break;
 				}
 			}
 		}
@@ -553,7 +567,19 @@ int main(int argc,char* argv[])
 				xmax*=0.5;
 				fmv1[ln]=new Fmv1(tab,tab,2*lbs[ln],xmax,fmv0[ln]->get_z(lbs[ln]),amp,fld, scl, cuev, fmv0[ln]);
 				fmv0[ln+1]=fmv1[ln];
-				fmv1[ln]->set_fmr_initial();
+
+				//initial setting for the upper layer start
+				double deltat=0.5*fmv0[ln]->get_dt0();
+				fmv1[ln]->initial_params(cfl,etaa,etab,etabb,lambda,deltat,deltat,deltat,t,tini,Hb,KOep,exg,fluidw,scalarm,Mkap,bminmod);
+				fmv1[ln]->set_fmr_initial();					
+				cout << "initial setting done" << endl;
+				//initial setting for the upper layer end
+
+				char buff[100];
+				snprintf(buff,sizeof(buff),"out_horizon_%02d.dat",ln+1);
+				filehorizon[ln+1].open(buff);
+				//snprintf(buff,sizeof(buff),"out_neck_%02d.dat",ln+1);
+				//fileneck[ln+1].open(buff);
 				cout << "initial setting done" << endl;
 				
 				if(ln>0)
@@ -605,7 +631,18 @@ int main(int argc,char* argv[])
 	//continue plot end
 		
 	//finalize
-	delete fmv;
+	for(int i=0;i<=ln;i++)
+	{	
+		delete fmv0[i];	
+		cout << "fmv0-"<< i << "delete" << endl;
+	}
+
+	delete[] fmv0;
+	cout << "fmv0 delete" << endl;
+
+	delete[] fmv1;
+	cout << "fmv1 delete" << endl;
+	//finalize end
 	
 	return 0;
 }

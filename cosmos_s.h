@@ -48,6 +48,7 @@ protected:
 	int exg;											// excision grid number
 	int hl;												// value of l just outside the horizon
 	int hn;												// number of horizons so far
+	int nneck;											// number of necks so far
 	int hnmax;
 
 	int layn;											// layer number
@@ -78,7 +79,11 @@ protected:
 	double kap_MUSCL,b_minmod;							// parameters for MUSCL interpolation
 	double fluidw;										// parameter for fluid EOS
 	///////////////  fluid parameters ////////////////////////////////////////
-	
+
+		///////////////  scalar field parameters /////////////////////////////////
+	double scalarm;										// scalar filed mass parameter
+	///////////////  scalar field parameters /////////////////////////////////
+
 	///////////////  parameters for initial data and settings ////////////////
 	double Hb;											// initial Hubble
 	double tini;										// initial time
@@ -148,6 +153,7 @@ protected:
 	bool *nonzero;										// flag for nonzero v on z-axis
 	bool *evod;											// even or odd variables at the center
 	double **horis;										// horizon radiuses
+	double *neck;										// neck radiuses
 	///////////////  supplements /////////////////////////////////////////////
 	
 public:
@@ -278,6 +284,7 @@ public:
 		llmin=lli;										// minimum l for constraint check
 		hl=0;											// value of l just outside the horizon
 		hn=0;											// number of horizons
+		nneck=0;
 		hnmax=10;										// max number of horizons
 		///////////////  parameters and temporary variables //////////////////////////////
 
@@ -479,6 +486,7 @@ public:
 
 		///////////////  horizon radius strage ///////////////////////////////////////////
 		horis = new double*[hnmax];
+		neck = new double[hnmax];
 		for(int i=0;i<hnmax;i++)
 		{
 			horis[i] = new double[2];
@@ -580,9 +588,10 @@ public:
 		///////////////  bool flags //////////////////////////////////////////////////////
 
 		///////////////  horizon radius setting //////////////////////////////////////////
-		for(int i=0;i<2;i++)
+		for(int h=0;h<hnmax;h++)
 		{
-			for(int h=0;h<hnmax;h++)
+			neck[h]=10.;
+			for(int i=0;i<2;i++)
 			{
 				horis[h][i]=10.;
 			}
@@ -907,6 +916,9 @@ public:
 	}
 	double get_fluidw() const{
 		return fluidw;
+	}
+		double get_scalarm() const{
+		return scalarm;
 	}
 	double get_dx() const{
 		return dx;
@@ -1295,6 +1307,10 @@ public:
 	}
 	void set_fluidw(double fw){
 		fluidw=fw;
+		return;
+	}
+		void set_scalarm(double sm){
+		scalarm=sm;
 		return;
 	}
 	void set_Mkap(double k){
@@ -2213,6 +2229,210 @@ public:
 		return;
 	}
 
+
+	void check_neck(ofstream& fout)
+	{
+		double temphr[hnmax];
+		double drR=0.;
+		int hnc=0;
+
+		for(int h=0;h<hnmax;h++)
+		{
+			temphr[h]=10.;
+		}
+
+		for(int l=llmin;l<=lui;l++)
+		{
+			int k=0;
+			int j=0;
+			
+			double prerad,predrR,rad;
+			
+			predrR=drR;
+			prerad=get_z(l-1);
+			rad=get_z(l);
+			
+			if(l==lli)
+			{
+				drR=1.0e-10;
+				continue;
+			}
+			else
+			drR=get_outv(l,k,j,0);
+
+			if(get_hflag(l-1,k,j)==1 && exc==true)
+			continue;
+
+			if(drR*predrR<=0.)
+			{
+				if(hnc+1>=hnmax)
+				{
+					cout << "too many necks" << endl;
+					//exit(1);
+				}
+				else
+				{
+					temphr[hnc]=(prerad+(rad-prerad)*predrR/(predrR-drR));
+					hnc++;
+				}
+			}
+		}
+
+		double devs[hnmax];
+		int hcpn[hnmax];
+		int noashc=0;
+		for(int h=0;h<hnmax;h++)
+		{
+			devs[h]=999999999.;
+			hcpn[h]=hnmax;
+		}
+		
+		for(int hc=0;hc<hnc;hc++)
+		{
+			int hpsqn=hnmax;	
+			int hpsqn2=hnmax;	
+			double dev=999999999.;
+			double dev2=999999999.;
+			
+			for(int hp=0;hp<nneck;hp++)
+			{
+				if(neck[hp]>1.)
+				continue;
+				
+				double devtemp=abs(temphr[hc]-neck[hp]);
+				if(devtemp<dev)
+				{
+					dev2=dev;
+					hpsqn2=hpsqn;
+					dev=devtemp;
+					hpsqn=hp;
+				}
+			}
+
+			if(dev<devs[hpsqn])
+			{
+				if(hcpn[hpsqn]!=hnmax)
+				{
+					int hcc=hcpn[hpsqn];
+					double devv=999999999.;
+					int hpsqnn=hnmax;
+					for(int hpp=0;hpp<nneck;hpp++)
+					{
+						if(hpp==hpsqn || neck[hpp]>1.)
+						continue;
+
+						double devtemp=abs(temphr[hcc]-neck[hpp]);
+						if(devtemp<devv)
+						{
+							devv=devtemp;
+							hpsqnn=hpp;
+						}
+					}
+
+					if(devv<devs[hpsqnn])
+					{
+						if(hcpn[hpsqnn]!=hnmax)
+						{
+							hcpn[nneck+noashc]=hcpn[hpsqnn];
+							devs[nneck+noashc]=0.;
+							noashc++;
+
+							if(nneck+noashc>=hnmax)
+							{
+								cout << "too many necks 1" << endl;
+								noashc--;
+							}
+						}
+
+						devs[hpsqnn]=devv;
+						hcpn[hpsqnn]=hcc;
+					}
+					else
+					{
+						hcpn[nneck+noashc]=hcc;
+						devs[nneck+noashc]=0.;
+						noashc++;
+
+						if(nneck+noashc>=hnmax)
+						{
+							cout << "too many neck 2" << endl;
+							noashc--;
+						}
+					}
+				}
+				
+				devs[hpsqn]=dev;
+				hcpn[hpsqn]=hc;
+			}
+			else if(dev2<devs[hpsqn2])
+			{
+				if(hcpn[hpsqn2]!=hnmax)
+				{
+					hcpn[nneck+noashc]=hcpn[hpsqn2];
+					devs[nneck+noashc]=0.;
+					noashc++;
+
+					if(nneck+noashc>=hnmax)
+					{
+						cout << "too many necks 3" << endl;
+						noashc--;
+					}
+				}
+				devs[hpsqn2]=dev2;
+				hcpn[hpsqn2]=hc;
+			}
+			else
+			{
+				hcpn[nneck+noashc]=hc;
+				devs[nneck+noashc]=0.;
+				noashc++;
+
+				if(nneck+noashc>=hnmax)
+				{
+					cout << "too many necks 4" << endl;
+					noashc--;
+				}
+			}
+		}
+
+		if(noashc>0)
+		{
+			nneck=nneck+noashc;
+			cout << "nneck=" << nneck << endl;
+		}
+
+		fout.setf(ios_base::fixed, ios_base::floatfield);
+		fout.precision(16);
+		fout << setw(20) << get_t();							//1
+
+		for(int h=0;h<hnmax;h++)
+		{
+			if(hcpn[h]<hnmax && temphr[hcpn[h]]<1.)
+			{
+				//cout << "horis substituted" << endl;
+				neck[h]=temphr[hcpn[h]];
+			}
+			else
+			{
+				neck[h]=10.;
+			}
+
+			if(neck[h]>1.)
+			{
+				fout 
+				<< " "  << setw(20) << "-";	//2
+			}
+			else
+			{
+				fout 
+				<< " "  << setw(20) << neck[h];
+			}
+		}
+		fout << endl;
+		
+		return;
+	}
+
 	////////////////////////////////////////
 	//  flag setting func.
 	////////////////////////////////////////
@@ -2297,7 +2517,8 @@ public:
 	void initial_iso_longwave(double mu,double k,double inr,double L);
 	void initial_longwave(double mu,double k,double inr,double L);
 	void set_initial_final();
-	
+	void initial_params(double cfli,double etaai,double etabi,double etabbi,double lambdai,double dt0i,double dtpi,double dtppi,double ti,double tinii,double Hbi,double KOepi,int exgi,double fluidwi,double scalarmi,double kap_MUSCLi,double b_minmodi);
+
 	double Phi(double r,double mu,double kk, double inr, double L);
 	double dzPhi(double r,double mu,double kk, double inr, double L);
 	double ddzPhi(double r,double mu,double kk, double inr, double L);

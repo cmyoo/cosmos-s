@@ -2086,3 +2086,25 @@ double Fmv0::dddzPsi(double r,double mu,double kk,double inr,double L)
 	return w;
 }
 
+void Fmv0::initial_params(double cfli,double etaai,double etabi,double etabbi,double lambdai,double dt0i,double dtpi,double dtppi,double ti,double tinii,double Hbi,double KOepi,int exgi,double fluidwi,double scalarmi,double kap_MUSCLi,double b_minmodi)
+{
+	cfl=cfli;
+	etaa=etaai;
+	etab=etabi;
+	etabb=etabbi;
+	lambda=lambdai;
+	dt0=dt0i;
+	dtp=dtpi;
+	dtpp=dtppi;
+	t=ti;
+	tini=tinii;
+	Hb=Hbi;
+	KOep=KOepi;
+	exg=exgi;
+	fluidw=fluidwi;
+	scalarm=scalarmi;
+	kap_MUSCL=kap_MUSCLi;
+	b_minmod=b_minmodi;
+
+	return;
+}
