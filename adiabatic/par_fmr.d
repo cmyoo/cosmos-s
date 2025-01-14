@@ -5,9 +5,9 @@
 ##maximum number of fmr layers 
 3		
 ##grid number for fmr region
-100
-100
-100
+20
+20
+20
 0
 ##values of the lapse for starting fmr
 0.1

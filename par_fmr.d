@@ -5,9 +5,9 @@
 ##maximum number of fmr layers 
 6		
 ##grid number for fmr region
-100
-100
-100		
+50
+50
+50		
 50
 40
 30

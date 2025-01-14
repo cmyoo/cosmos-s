@@ -97,7 +97,8 @@ double& bminmod, 							//b in minmod function
 double& ptintval1,							//1st part print interval boundary time
 double& ptintval2,							//2nd
 double& changept,							//printing interval change time
-int& horicheckintv							//horizon formation check interval
+int& horicheckintv,							//horizon formation check interval
+int& constoutintv
 );
 
 
@@ -141,8 +142,10 @@ int main(int argc,char* argv[])
 		Hb,									//initial Hubble
 		fluidw, 							//w for fluid EOS
 		Mkap,								//kappa for MUSCL
-		bminmod;							//b for minmod 
-		
+		bminmod,							//b for minmod 
+		hammax,								//maximum value of hamiltonian constraint violation
+		mommax;								//maximum value of momentum constraint violation
+
 		int exg;							//excision grid num
 		
 		int contn;							//1(true) for continue
@@ -155,7 +158,7 @@ int main(int argc,char* argv[])
 	double changept;						//printing interval change time
 	double nexttimeprint;
 	
-	int horicheckintv;
+	int horicheckintv,constoutintv;
 
 	int exc=0;								//excision(0:false,1:true)
 	int laymax;								//max number of layers
@@ -173,7 +176,7 @@ int main(int argc,char* argv[])
 		xmax, zmax,
 		cfl, cdt, etaa, etab, etabb,
 		KOep, exg, contn, file_continue, inr,outr,mu,kk,mus,kks, Hb, fluidw, Mkap, bminmod,
-		ptintval1,ptintval2,changept,horicheckintv);
+		ptintval1,ptintval2,changept,horicheckintv,constoutintv);
 	fin.close();
 	
 	
@@ -380,7 +383,9 @@ int main(int argc,char* argv[])
 		#pragma omp barrier
 		fmv->check_const();
 		#pragma omp barrier
-		fmv->print_const(fileconst);
+		//fmv->print_const(fileconst);
+		hammax=fmv->get_hammax();
+		mommax=fmv->get_mommax();
 		#pragma omp barrier
 		cout << " layer number=0"  
 		<< " time=" << t 
@@ -465,20 +470,34 @@ int main(int argc,char* argv[])
 		//checking constraint in the highest layer start
 		if(ln!=0)
 		{
-			int lni=ln;
-			cout << " layer number=" << lni << endl
-			<< " ham=" << fmv0[lni]->get_ham() 
-			<< " hammax=" << fmv0[lni]->get_hammax() 
-			<< "  l=" 
-			<< fmv0[lni]->get_lhm()   
-			<< " r=" << fmv0[lni]->get_z(fmv0[lni]->get_lhm())
-			<< endl 
-			<< " mom=" << fmv0[lni]->get_mom() 
-			<< " mommax=" << fmv0[lni]->get_mommax() 
-			<< "  l=" 
-			<< fmv0[lni]->get_lmm()  
-			<< " r=" << fmv0[lni]->get_z(fmv0[lni]->get_lmm())
-			<< endl << endl;
+			//int lni=ln;
+			for(int lni=1;lni<=ln;lni++)
+			{
+				hammax=max(hammax,fmv0[lni]->get_hammax());
+				mommax=max(mommax,fmv0[lni]->get_mommax());
+
+				cout << " layer number=" << lni << endl
+				<< " ham=" << fmv0[lni]->get_ham() 
+				<< " hammax=" << fmv0[lni]->get_hammax() 
+				<< "  l=" 
+				<< fmv0[lni]->get_lhm()   
+				<< " r=" << fmv0[lni]->get_z(fmv0[lni]->get_lhm())
+				<< endl 
+				<< " mom=" << fmv0[lni]->get_mom() 
+				<< " mommax=" << fmv0[lni]->get_mommax() 
+				<< "  l=" 
+				<< fmv0[lni]->get_lmm()  
+				<< " r=" << fmv0[lni]->get_z(fmv0[lni]->get_lmm())
+				<< endl << endl;
+			}
+		}
+
+		if(step%constoutintv==0)
+		{
+			fileconst << setw(20) << t					//1
+			<< " "  << setw(20) << hammax				//2
+			<< " "  << setw(20) << mommax				//3
+			<< endl;
 		}
 		//checking constraint in the highest layer end
 
@@ -594,7 +613,10 @@ int main(int argc,char* argv[])
 			}
 		}
 		//adding another layer if criterion is met end
-		
+				
+		//if(hform)
+		//break;
+
 		//printing all data files start
 		if(printflag)
 		{
@@ -610,10 +632,14 @@ int main(int argc,char* argv[])
 	//main loop end
 	
 	//final print 
+	
+	//final print 
 	if(mstep!=0)
 	{
-		fmv->setv0();
-		fmv->print_z(filez,0,0);
+		for(int i=0;i<=ln;i++)
+		{
+			fmv0[i]->print_bz(filez,0,0);
+		}
 	}
 	
 	//convergence plot 
@@ -680,7 +706,8 @@ double& bminmod,
 double& ptintval1,
 double& ptintval2,
 double& changept,
-int& horicheckintv
+int& horicheckintv,
+int& constoutintv
 ){
 	string buf;
 	char cp[100];
@@ -839,6 +866,10 @@ int& horicheckintv
 	getline(fin, buf);
 	if((buf[0]!='#')&&(!buf.empty())){
 		sscanf(buf.c_str(),"%d %s",&horicheckintv,cp);
+	}
+	getline(fin, buf);
+	if((buf[0]!='#')&&(!buf.empty())){
+		sscanf(buf.c_str(),"%d %s",&constoutintv,cp);
 	}
 	return;
 }

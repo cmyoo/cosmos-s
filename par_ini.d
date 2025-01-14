@@ -6,7 +6,7 @@
 30.	            # maximum time to evolve
 3	            # tab number of the bufer grids
 20.	            # amp
-400	            # maximum grid number of z
+100	            # maximum grid number of z
 1.	            # maximum coordinate of x
 1.	            # maximum coordinate of z
 
@@ -47,4 +47,5 @@ ini_all.dat	    # continue file
 5.	            # 1st part print interval boundary time
 2.	            # 2nd part
 100.	        # changing time for print interval
-50             # horizon formation check interval
+50              # horizon formation check interval
+100             # constraint output interval

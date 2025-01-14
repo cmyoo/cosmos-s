@@ -280,7 +280,8 @@ public:
 		cfl=0.;											// temporary initial values for cfl
 		
 		boxL=1.;										// box size
-		negb=lui/20;									// neglecting boundary grids
+		double exclude_boundary_rate=0.05;
+		negb=int(lui*0.5*exclude_boundary_rate);		// half of the neglecting boundary grids
 		llmin=lli;										// minimum l for constraint check
 		hl=0;											// value of l just outside the horizon
 		hn=0;											// number of horizons
