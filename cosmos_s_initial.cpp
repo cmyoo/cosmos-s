@@ -1992,10 +1992,9 @@ double Fmv::Psi(double r,double mu,double kk,double inr,double L)
 	if(r>L)
 	 w=1.;
 	else if(r<inr)
-	 w=pow(M_E,(mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.))/2.);
-	 
+	 w=	pow(M_E,(mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2))))/2.);
 	else 
-	 w=pow(M_E,(mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.)*
+	 w=pow(M_E,(mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)))*
       (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.);
 	
 	return w;
@@ -2009,13 +2008,15 @@ double Fmv::dzPsi(double r,double mu,double kk,double inr,double L)
 	if(r>L)
 	 w=0.;
 	else if(r<inr)
-	 w=-(mu*r*pow(M_E,(mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.) - pow(kk,2)*pow(r,2))/2.)*pow(kk,2))/2.;
+	 w=-0.16666666666666666*(mu*r*pow(M_E,(mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2))))/2. - 
+       (pow(kk,2)*pow(r,2))/6.)*pow(kk,2));
 	 
 	else 
-	 w=-(mu*pow(M_E,(-(pow(kk,2)*pow(r,2)) + mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.)*
-           (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-36)*
-      (36*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
-        r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6))))/2.;
+	 w=-0.16666666666666666*(mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)) + 
+       (mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)))*
+          (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-36)*
+     (108*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
+       r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6))));
 	
 	return w;
 }
@@ -2027,24 +2028,27 @@ double Fmv::ddzPsi(double r,double mu,double kk,double inr,double L)
 	if(r>L)
 	w=0.;
 	else if(r<inr)
-	w=(mu*pow(M_E,(mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.))/2. - pow(kk,2)*pow(r,2))*pow(kk,2)*
-    (mu*pow(kk,2)*pow(r,2) + 2*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*(-1 + pow(kk,2)*pow(r,2))))/4.;
+	w=(mu*pow(M_E,(mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2))))/2. - 
+       (pow(kk,2)*pow(r,2))/3.)*pow(kk,2)*
+     (mu*pow(kk,2)*pow(r,2) + 2*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*(-3 + pow(kk,2)*pow(r,2))))/
+   36.;
 	
 	else 
-	w=(mu*pow(M_E,-(pow(kk,2)*pow(r,2)) + (mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.)*
-		(1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-72)*
-		(-2160*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*pow(inr - L,36)*pow(L - r,10)*
+	w=(mu*pow(M_E,-0.3333333333333333*(pow(kk,2)*pow(r,2)) + 
+       (mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)))*
+          (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-72)*
+     (-19440*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*pow(inr - L,36)*pow(L - r,10)*
         pow(pow(inr - L,6) - pow(L - r,6),4) + 
-		360*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*pow(inr - L,36)*pow(L - r,4)*
+       3240*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*pow(inr - L,36)*pow(L - r,4)*
         pow(pow(inr - L,6) - pow(L - r,6),5) + 
-		144*r*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*pow(kk,2)*pow(inr - L,36)*pow(L - r,5)*
+       432*r*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*pow(kk,2)*pow(inr - L,36)*pow(L - r,5)*
         pow(pow(inr - L,6) - pow(L - r,6),5) - 
-		2*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*pow(kk,2)*pow(inr - L,36)*
+       6*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*pow(kk,2)*pow(inr - L,36)*
         (pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)) + 
-		2*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*pow(kk,4)*pow(inr - L,36)*pow(r,2)*
+       2*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*pow(kk,4)*pow(inr - L,36)*pow(r,2)*
         (pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)) + 
-		mu*pow(36*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
-		r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)),2)))/4.;
+       mu*pow(108*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
+          r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)),2)))/36.;
 	
 	return w;
 }
@@ -2056,35 +2060,40 @@ double Fmv::dddzPsi(double r,double mu,double kk,double inr,double L)
 	if(r>L)
 	w=0.;
 	else if(r<inr)
-	w=-(mu*r*pow(M_E,(mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.) - 3*pow(kk,2)*pow(r,2))/2.)*pow(kk,4)*
-	(pow(kk,2)*pow(mu,2)*pow(r,2) + 4*pow(M_E,pow(kk,2)*pow(r,2))*(-3 + pow(kk,2)*pow(r,2)) + 
-        6*mu*pow(M_E,(pow(kk,2)*pow(r,2))/2.)*(-1 + pow(kk,2)*pow(r,2))))/8.;
+	w=-0.004629629629629629*(mu*r*pow(M_E,(mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2))) - 
+         pow(kk,2)*pow(r,2))/2.)*pow(kk,4)*
+     (pow(kk,2)*pow(mu,2)*pow(r,2) + 4*pow(M_E,(pow(kk,2)*pow(r,2))/3.)*
+        (-9 + pow(kk,2)*pow(r,2)) + 6*mu*pow(M_E,(pow(kk,2)*pow(r,2))/6.)*
+        (-3 + pow(kk,2)*pow(r,2))));
 
 	else 
-	w=(-3*pow(M_E,-(pow(kk,2)*pow(r,2)) + (mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.)*
-			(1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-72)*
-		pow(mu,2)*(36*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
+	w=-0.027777777777777776*(pow(M_E,-0.3333333333333333*(pow(kk,2)*pow(r,2)) + 
+        (mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)))*
+           (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-72)*
+      pow(mu,2)*(108*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
         r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)))*
-		(-1080*pow(L - r,10)*pow(pow(inr - L,6) - pow(L - r,6),4) + 
-        180*pow(L - r,4)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
-        72*r*pow(kk,2)*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) - 
-        pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)) + 
-        pow(kk,4)*pow(r,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6))))/4. + 
-	(mu*pow(M_E,(-(pow(kk,2)*pow(r,2)) + mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.)*
-			(1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-36)*
-		(-25920*pow(L - r,15)*pow(pow(inr - L,6) - pow(L - r,6),3) + 
-        16200*pow(L - r,9)*pow(pow(inr - L,6) - pow(L - r,6),4) + 
-        3240*r*pow(kk,2)*pow(L - r,10)*pow(pow(inr - L,6) - pow(L - r,6),4) - 
-        720*pow(L - r,3)*pow(pow(inr - L,6) - pow(L - r,6),5) - 
-        540*r*pow(kk,2)*pow(L - r,4)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
-        108*pow(kk,2)*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) - 
-        108*pow(kk,4)*pow(L - r,5)*pow(r,2)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
-        3*r*pow(kk,4)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)) - 
-        pow(kk,6)*pow(r,3)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6))))/2. - 
-	(pow(M_E,(-3*pow(kk,2)*pow(r,2) + mu*pow(M_E,-(pow(kk,2)*pow(r,2))/2.)*
-			(1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-108)*
-		pow(mu,3)*pow(36*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
-        r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)),3))/8.;
+      (-9720*pow(L - r,10)*pow(pow(inr - L,6) - pow(L - r,6),4) + 
+        1620*pow(L - r,4)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
+        216*r*pow(kk,2)*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) - 
+        3*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)) + 
+        pow(kk,4)*pow(r,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)))) + 
+   (mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)) + 
+        (mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)))*
+           (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*pow(inr - L,-36)*
+      (-699840*pow(L - r,15)*pow(pow(inr - L,6) - pow(L - r,6),3) + 
+        437400*pow(L - r,9)*pow(pow(inr - L,6) - pow(L - r,6),4) + 
+        29160*r*pow(kk,2)*pow(L - r,10)*pow(pow(inr - L,6) - pow(L - r,6),4) - 
+        19440*pow(L - r,3)*pow(pow(inr - L,6) - pow(L - r,6),5) - 
+        4860*r*pow(kk,2)*pow(L - r,4)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
+        972*pow(kk,2)*pow(L - r,5)*pow(pow(inr - L,6) - pow(L - r,6),5) - 
+        324*pow(kk,4)*pow(L - r,5)*pow(r,2)*pow(pow(inr - L,6) - pow(L - r,6),5) + 
+        9*r*pow(kk,4)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)) - 
+        pow(kk,6)*pow(r,3)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6))))/54. - 
+   (pow(M_E,(-(pow(kk,2)*pow(r,2)) + mu*pow(M_E,-0.16666666666666666*(pow(kk,2)*pow(r,2)))*
+           (1 - pow(inr - L,-36)*pow(pow(inr - L,6) - pow(L - r,6),6)))/2.)*
+      pow(inr - L,-108)*pow(mu,3)*pow(108*pow(L - r,5)*
+         pow(pow(inr - L,6) - pow(L - r,6),5) + 
+        r*pow(kk,2)*(pow(inr - L,36) - pow(pow(inr - L,6) - pow(L - r,6),6)),3))/216.;
 	
 	return w;
 }
