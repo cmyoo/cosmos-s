@@ -2012,7 +2012,7 @@ public:
 	
 	void check_horizon(ofstream& fout)
 	{
-		double Comp=0.,Arad=0.;
+		double Comp=0.,Arad=0.,Mass;
 		double temphr[hnmax][2];
 		int hnc=0;
 
@@ -2022,13 +2022,16 @@ public:
 			temphr[h][1]=10.;
 		}
 
-		for(int l=llmin;l<=lui;l++)
+		Arad=get_outv(llmin,0,0,5);
+		Mass=get_outv(llmin,0,0,9);
+		Comp=2.*Mass/Arad;
+		
+		for(int l=llmin+1;l<=lui-2*negb;l++)
 		{
 			int k=0;
 			int j=0;
 			
 			double preArad,prerad,preComp,rad;
-			double Mass;
 			
 			Mass=get_outv(l,k,j,9);
 			preArad=Arad;
@@ -2036,10 +2039,6 @@ public:
 			Arad=get_outv(l,k,j,5);
 			rad=get_z(l);
 			preComp=Comp;
-			
-			if(l==lli)
-			Comp=0.;
-			else
 			Comp=2.*Mass/Arad;
 
 			if(get_hflag(l-1,k,j)==1 && exc==true)
@@ -2251,7 +2250,7 @@ public:
 			temphr[h]=10.;
 		}
 
-		for(int l=llmin;l<=lui;l++)
+		for(int l=llmin;l<=lui-2*negb;l++)
 		{
 			int k=0;
 			int j=0;
