@@ -2026,7 +2026,7 @@ public:
 		Mass=get_outv(llmin,0,0,9);
 		Comp=2.*Mass/Arad;
 		
-		for(int l=llmin+1;l<=lui-2*negb;l++)
+		for(int l=llmin+1;l<=lui;l++)
 		{
 			int k=0;
 			int j=0;
