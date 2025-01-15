@@ -431,17 +431,6 @@ int main(int argc,char* argv[])
 		}
 		//output judge end
 
-		//printing 
-		if(printflag)
-		{
-			fmv->print_z(filez,0,0);
-			
-			for(int i=0;i<ln;i++)
-			{
-				fmv1[i]->print_bz(filez,0,0);
-			}
-		}
-
 		fmv->BSSN(2);
 		#pragma omp barrier
 		fmv->boundary_asym(2);
@@ -626,6 +615,11 @@ int main(int argc,char* argv[])
  			for(int i=0;i<=ln;i++)
 			 fmv0[i]->print_all(fileall);
 			fileall.close();
+
+			for(int i=0;i<=ln;i++)
+			{
+				fmv0[i]->print_bz(filez,0,0);
+			}
 		}
 		//printing all data files end
 	}

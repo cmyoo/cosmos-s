@@ -48,4 +48,4 @@ ini_all.dat	    # continue file
 2.	            # 2nd part
 100.	        # changing time for print interval
 50              # horizon formation check interval
-100             # horizon formation check interval
+100             # constraint output interval
