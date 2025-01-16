@@ -83,6 +83,8 @@ void Fmv1::evolve()
 	
 	dt0=0.5*llay->get_dt0();
 	
+	set_boundary(1);
+	#pragma omp barrier
 	onestep(2);
 	#pragma omp barrier
 	onestep(4);
@@ -179,9 +181,13 @@ void Fmv1::set_boundary(int itype)
 		bb=1.;
 		cc=0.;
 	}
+
+	int minl=lui+1;
+	if(itype==1)
+	minl=lui-negb*2+1;
 	
 	#pragma omp parallel for
-	for(int l=lui+1-negb*2;l<=lui+tab;l++)
+	for(int l=minl;l<=lui+tab;l++)
 	{
 		int k=0;
 		int j=0;

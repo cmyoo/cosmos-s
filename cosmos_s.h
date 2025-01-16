@@ -1922,7 +1922,7 @@ public:
 
 		#pragma omp barrier
 
-		double fac=lui-2*negb-llmin+1-excnum;
+		double fac=lui-negb-llmin+1-excnum;
 		ham=hamtmp/fac;
 		mom=momtmp/fac;
 		dGam=dGamtmp/fac;
@@ -2242,7 +2242,7 @@ public:
 	void check_neck(ofstream& fout)
 	{
 		double temphr[hnmax];
-		double drR=0.;
+		double drR=get_outv(llmin,0,0,11);;
 		int hnc=0;
 
 		for(int h=0;h<hnmax;h++)
@@ -2250,7 +2250,7 @@ public:
 			temphr[h]=10.;
 		}
 
-		for(int l=llmin;l<=lui-2*negb;l++)
+		for(int l=llmin+1;l<=lui;l++)
 		{
 			int k=0;
 			int j=0;
@@ -2261,12 +2261,6 @@ public:
 			prerad=get_z(l-1);
 			rad=get_z(l);
 			
-			if(l==lli)
-			{
-				drR=1.0e-10;
-				continue;
-			}
-			else
 			drR=get_outv(l,k,j,11);
 
 			if(get_hflag(l-1,k,j)==1 && exc==true)
