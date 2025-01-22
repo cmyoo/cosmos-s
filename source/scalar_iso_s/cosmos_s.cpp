@@ -603,8 +603,8 @@ int main(int argc,char* argv[])
 		}
 		//adding another layer if criterion is met end
 				
-		if(hform)
-		break;
+		// if(hform)
+		// break;
 
 		//printing all data files start
 		if(printflag)

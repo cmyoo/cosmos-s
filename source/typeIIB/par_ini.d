@@ -2,8 +2,8 @@
 ##   parameters for COSMOS_S code 
 ##   ver1.00 by Chulmoon Yoo  
 ##################################################################################
-99999999        # maximum step of the main loop 
-25.            # maximum time to evolve
+20              # maximum step of the main loop 
+30.             # maximum time to evolve
 3	            # tab number of the bufer grids
 20.	            # amp
 400	            # maximum grid number of z
@@ -24,7 +24,7 @@
 ##################################################################################
 ###  initial data parameter
 ##################################################################################
-0	            # 0:no contnue 1:continue
+1	            # 0:no contnue 1:continue
 ini_all.dat	    # continue file
 0.8 	        # inr  parameter for the smoothing function
 1.0	            # outr parameter for the smoothing function
