@@ -1,0 +1,50 @@
+name: C/C++ CI
+
+on:
+  push:
+
+jobs:
+  adiabatic_spherical_s:
+    name: Run adiabatic_spherical_s
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: run adiabatic_spherical_s
+      run: |
+        pwd
+        cd source/adiabatic_spherical_s/
+        pwd
+        make
+        ./cosmos_s
+        ls out_*
+
+  scalar_iso_s:
+    name: Run scalar_iso_s
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: run scalar_iso_s
+      run: |
+        pwd
+        cd source/scalar_iso_s/
+        pwd
+        make
+        ./cosmos_s
+        ls out_*
+
+  typeIIB:
+    name: Run typeIIB
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: run typeIIB
+      run: |
+        pwd
+        cd source/typeIIB/
+        pwd
+        make
+        ./cosmos_s
+        ls out_*
