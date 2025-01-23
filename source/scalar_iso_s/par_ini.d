@@ -30,7 +30,7 @@ ini_all.dat	    # continue file
 1.0	            # outr parameter for the smoothing function
 0.              # amplitude 
 10.	            # typical wave number
-0.64	            # amplitude for the scalar field
+0.65            # amplitude for the scalar field
 10.	            # tipical wave number for the scalar field
 50.0	        # Hubble
 

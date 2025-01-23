@@ -405,31 +405,6 @@ int main(int argc,char* argv[])
 		<< " r=" << fmv->get_z(fmv->get_lmm())
 		<< endl << endl;
 		//checking constraint end
-		
-		//escape judge 
-		if(t>tmax)
-		{
-			step=mstep+1;
-			//fmv->print_z(filez,0,0);
-			break;
-		}	
-		
-		//output judge start
-		bool printflag=false;
-		
-		if(t>nexttimeprint-1.0e-10)
-		{
-			cout << "t=" << t << "nexttimeprint=" << nexttimeprint << endl;
-			printflag=true;
-			
-			if(t+ptintval1>changept)
-			nexttimeprint+=ptintval2;
-			else
-			nexttimeprint+=ptintval1;
-			 
-			cout << "nexttimeprint=" << nexttimeprint << endl;
-		}
-		//output judge end
 
 		fmv->BSSN(2);
 		#pragma omp barrier
@@ -508,6 +483,23 @@ int main(int argc,char* argv[])
 		}
 		//time forward end
 		
+				//output judge start
+		bool printflag=false;
+		
+		if(t>nexttimeprint-1.0e-10)
+		{
+			cout << "t=" << t << "nexttimeprint=" << nexttimeprint << endl;
+			printflag=true;
+			
+			if(t+ptintval1>changept)
+			nexttimeprint+=ptintval2;
+			else
+			nexttimeprint+=ptintval1;
+			 
+			cout << "nexttimeprint=" << nexttimeprint << endl;
+		}
+		//output judge end
+
 		//checking horizon formation (future outer trapped region) and excision start
 		if(step%horicheckintv==1)
 		{
@@ -559,6 +551,13 @@ int main(int argc,char* argv[])
 			}
 		}
 		//checking horizon formation (future outer trapped region) and excision end
+		
+		//escape judge 
+		if(t>tmax)
+		 break;
+		// if(hform)
+		// break;
+
 
 		//adding another layer if criterion is met start
 		if(ln<laymax && exc==0)
@@ -603,9 +602,6 @@ int main(int argc,char* argv[])
 		}
 		//adding another layer if criterion is met end
 				
-		// if(hform)
-		// break;
-
 		//printing all data files start
 		if(printflag)
 		{
