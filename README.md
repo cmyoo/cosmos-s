@@ -1,3 +1,7 @@
+[![C++](https://custom-icon-badges.herokuapp.com/badge/C++-f34b7d.svg?logo=Cplusplus&logoColor=white)]()
+[![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg?style=flat)]()
+[![BSD-3-Clause](https://custom-icon-badges.herokuapp.com/badge/license-BSD%203%20Clause-8BB80A.svg?logo=law&logoColor=white)]()
+
 # COSMOS-S
 <!-- 
 [![status](https://joss.theoj.org/papers/af52e7f1b7637bfa68818fde7c1a34de/status.svg)](https://joss.theoj.org/papers/af52e7f1b7637bfa68818fde7c1a34de)
