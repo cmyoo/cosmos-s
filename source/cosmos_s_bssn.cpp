@@ -1013,10 +1013,10 @@ void Fmv0::BSSN(int itype)
 				KK_xx=exK_xx*exKu_xx;
 				KK_zz=exK_zz*exKu_zz;
 				
-				//nnRiem_12=-KK_12+exp(4.*wa_p)*rc_12_p+ek_p*exK_12+pi4*((trs-Ene)*g12_p-2.*s12);
-				nnRiem_xx=-KK_xx+rc_xx_p/ewa4i+ek_p*exK_xx+pi4*((trs-Ene)*gxx_p-2.*sxx);
+				//nnRiem_12=-KK_12+exp(4.*wa_p)*rc_12_p+ek_p*exK_12+pi4*((trs-Ene)*g12_p/ewa4i-2.*s12);
+				nnRiem_xx=-KK_xx+rc_xx_p/ewa4i+ek_p*exK_xx+pi4*((trs-Ene)*gxx_p/ewa4i-2.*sxx);
 				nnRiem_yy=nnRiem_xx;
-				nnRiem_zz=-KK_zz+rc_zz_p/ewa4i+ek_p*exK_zz+pi4*((trs-Ene)*gzz_p-2.*szz);
+				nnRiem_zz=-KK_zz+rc_zz_p/ewa4i+ek_p*exK_zz+pi4*((trs-Ene)*gzz_p/ewa4i-2.*szz);
 				
 				//unnRiem_12=exp(-8.*wa_p)*(
 				//			gi1x_p*gi2x_p*nnRiem_xx+gi1y_p*gi2y_p*nnRiem_yy+gi1z_p*gi2z_p*nnRiem_zz);
