@@ -81,7 +81,7 @@ protected:
 	///////////////  fluid parameters ////////////////////////////////////////
 
 		///////////////  scalar field parameters /////////////////////////////////
-	double scalarm;										// scalar filed mass parameter
+	double scalarm;										// scalar field mass parameter
 	///////////////  scalar field parameters /////////////////////////////////
 
 	///////////////  parameters for initial data and settings ////////////////

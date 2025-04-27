@@ -1,0 +1,147 @@
+/**
+ * @file par_ini.d.dox
+ * @brief Documentation for the main initial parameter file `par_ini.d`.
+ *
+ * @details
+ * This file (`par_ini.d`) contains the primary configuration parameters for the COSMOS_S simulation.
+ * It controls simulation duration, grid setup, physical parameters (like initial conditions, fluid EOS),
+ * numerical parameters (CFL, dissipation, gauge), output settings, and continuation options.
+ *
+ * The file format typically consists of lines with a value followed by an optional comment starting with '#'.
+ * Lines starting directly with '#' are treated as comments and ignored during parsing by the `initial_read` function
+ * in `cosmos_s_initial.cpp`. The order of parameters is significant as the code reads them sequentially.
+ *
+ * @section sec_par_ini_format File Format Example
+ * ```
+ * #----------------------------------------------------------------------#
+ * #                       SIMULATION CONTROL                             #
+ * #----------------------------------------------------------------------#
+ * # max step number
+ * 100000             # mstep (long int) Maximum number of time steps.
+ * # max time
+ * 100.0              # tmax (double) Maximum simulation time.
+ *
+ * #----------------------------------------------------------------------#
+ * #                       GRID PARAMETERS                                #
+ * #----------------------------------------------------------------------#
+ * # tab number for buffer grids (z-axis)
+ * 3                  # tab (int) Number of buffer grid points on each side of the z-axis computational domain.
+ * # amplitude for inhomogeneous grid (z-axis)
+ * 0.5                # amp (double) Amplitude parameter for the inhomogeneous grid mapping in z. 0 means uniform.
+ * # max grid number of z (computational domain, excluding buffers)
+ * 128                # nzmax (int) Number of grid points along the z-axis in the main computational domain (lui - lli + 1).
+ * # max coord val of x (relative factor for xmax calculation)
+ * 1.0                # xmax_factor (double) Factor used with grid parameters to determine physical xmax. Actual xmax = zmax/double(nzmax)/(1.+amp)*tab*xmax_factor.
+ * # max coord val of z (physical)
+ * 100.0              # zmax (double) Maximum physical coordinate value along the z-axis.
+ *
+ * #----------------------------------------------------------------------#
+ * #                       NUMERICAL PARAMETERS                           #
+ * #----------------------------------------------------------------------#
+ * # CFL parameter
+ * 0.4                # cfl (double) Courant-Friedrichs-Lewy (CFL) factor, determines dt relative to grid spacing.
+ * # factor for cosmological time scale (dt=cfl*cdt*1/H)
+ * 0.1                # cdt (double) Additional factor for time step calculation, relevant in cosmological context (multiplies 1/H).
+ * # etaa for gauge (lapse evolution)
+ * 1.0                # etaa (double) Damping parameter for the 1+log lapse condition.
+ * # etab for gauge (shift evolution - Gamma driver)
+ * 1.0                # etab (double) Damping parameter for the Gamma-driver shift condition.
+ * # etabb for gauge (shift evolution - B evolution)
+ * 1.0                # etabb (double) Parameter controlling the evolution of the auxiliary variable B^i in the Gamma-driver shift condition.
+ * # factor for Kreiss-Oliger dissipation term
+ * 0.1                # KOep (double) Coefficient for the Kreiss-Oliger numerical dissipation term. Set to 0 to disable.
+ * # excision grid number (relative to lli)
+ * 10                 # exg (int) Grid index (relative to lli, e.g., lli + exg) inside which excision is applied if enabled.
+ *
+ * #----------------------------------------------------------------------#
+ * #                       INITIAL DATA & CONTINUATION                    #
+ * #----------------------------------------------------------------------#
+ * # 1 for continue, 0 for new start
+ * 0                  # contn (int) Flag to indicate if the simulation should continue from a previous state (1) or start anew (0).
+ * # continue file name (if contn=1)
+ * out_all.dat        # file_continue (char*) Name of the file containing the simulation state to continue from.
+ * # inner radius of matching region for initial profile
+ * 10.0               # inr (double) Inner radius for matching/smoothing the initial perturbation profile.
+ * # outer radius of matching region for initial profile
+ * 20.0               # outr (double) Outer radius for matching/smoothing the initial perturbation profile.
+ * # amplitude of the metric perturbation (e.g., for longwave)
+ * 0.01               # mu (double) Amplitude of the initial metric perturbation (Psi).
+ * # scale of the metric perturbation (e.g., for longwave)
+ * 0.1                # kk (double) Wavenumber or scale parameter for the initial metric perturbation.
+ * # amplitude of the perturbation of scalar field
+ * 0.01               # mus (double) Amplitude of the initial scalar field perturbation (Phi).
+ * # scale of the perturbation of scalar field
+ * 0.1                # kks (double) Wavenumber or scale parameter for the initial scalar field perturbation.
+ * # initial Hubble parameter
+ * 1.0                # Hb (double) Initial value of the Hubble parameter H.
+ *
+ * #----------------------------------------------------------------------#
+ * #                       PHYSICS PARAMETERS                             #
+ * #----------------------------------------------------------------------#
+ * # fluid equation of state parameter (w = P/rho)
+ * 0.3333333333       # fluidw (double) Equation of state parameter for the perfect fluid (e.g., 1/3 for radiation). Assumes P = w * rho.
+ * # kappa in MUSCL scheme for fluid reconstruction
+ * 0.0                # Mkap (double) Parameter kappa for the MUSCL reconstruction scheme used in fluid evolution (controls spatial order).
+ * # b in minmod limiter function for fluid reconstruction
+ * 1.0                # bminmod (double) Parameter 'b' for the minmod slope limiter used in fluid reconstruction.
+ *
+ * #----------------------------------------------------------------------#
+ * #                       OUTPUT CONTROL                                 #
+ * #----------------------------------------------------------------------#
+ * # 1st part print interval (time units)
+ * 0.1                # ptintval1 (double) Time interval for outputting data during the early phase of the simulation.
+ * # 2nd part print interval (time units)
+ * 1.0                # ptintval2 (double) Time interval for outputting data during the later phase of the simulation.
+ * # time at which print interval changes from ptintval1 to ptintval2
+ * 10.0               # changept (double) Simulation time when the output interval switches from `ptintval1` to `ptintval2`.
+ * # horizon formation check interval (steps)
+ * 10                 # horicheckintv (int) Check for apparent horizon formation every this many time steps.
+ * # constraint output interval (steps)
+ * 100                # constoutintv (int) Output constraint violation norms every this many time steps.
+ * ```
+ *
+ * @section sec_par_ini_params Parameter Descriptions
+ *
+ * @subsection subsec_par_ini_sim Simulation Control
+ * - **mstep**: (long int) Maximum number of time steps the simulation will run.
+ * - **tmax**: (double) Maximum physical time the simulation will run up to. The simulation stops if `t >= tmax` or `step >= mstep`.
+ *
+ * @subsection subsec_par_ini_grid Grid Parameters
+ * - **tab**: (int) Number of buffer grid points on each side along the z-axis (radial direction in spherical symmetry). These points are used for boundary conditions and finite differencing stencils but are not part of the primary evolution domain.
+ * - **amp**: (double) Controls the non-uniformity of the grid spacing along the z-axis using a sine-based mapping function (`funcf`). `amp = 0` corresponds to a uniform grid. `amp > 0` makes the grid finer near the center (z=0).
+ * - **nzmax**: (int) Number of grid points in the main computational domain along the z-axis (from `lli` to `lui`). Total z-grid points = `nzmax + 2*tab`.
+ * - **xmax_factor**: (double) A factor used in calculating the physical size of the x-dimension (and y). The actual `xmax` is derived from `zmax`, `nzmax`, `amp`, `tab`, and this factor. Relevant primarily if x and y dimensions are used (though the code seems focused on 1D+spherical symmetry).
+ * - **zmax**: (double) The physical coordinate value corresponding to the outer boundary of the main computational domain (`lui`).
+ *
+ * @subsection subsec_par_ini_num Numerical Parameters
+ * - **cfl**: (double) The Courant-Friedrichs-Lewy (CFL) factor. The time step `dt` is typically calculated as `dt = cfl * min(dz, dx, dy) / max_speed`. A value < 1 is required for stability in explicit schemes.
+ * - **cdt**: (double) An additional factor used in time step calculation, potentially scaling `dt` based on the Hubble time `1/H`. `dt = cfl * min(dz, cdt/H)`.
+ * - **etaa**: (double) Damping parameter η used in the "1+log" lapse evolution equation (`d_t alpha = -etaa * alpha^2 * (K - K_0)`). Controls how quickly the lapse responds to deviations in the trace of the extrinsic curvature K.
+ * - **etab**: (double) Damping parameter η used in the Gamma-driver shift condition (`d_t B^i = d_t \tilde{Gamma}^i - etab * B^i`). Controls the damping of the auxiliary variable B^i.
+ * - **etabb**: (double) Parameter controlling the evolution source term for the shift vector itself in the Gamma-driver condition (`d_t beta^i = etabb * B^i`). Often set equal to `etab` or a related value.
+ * - **KOep**: (double) Coefficient ε_KO for the Kreiss-Oliger numerical dissipation added to the right-hand side of the evolution equations to damp high-frequency noise.
+ * - **exg**: (int) The grid index `lli + exg` marks the inner boundary for excision. Grid points `l < lli + exg` are potentially removed or treated differently when excision is active.
+ *
+ * @subsection subsec_par_ini_init Initial Data & Continuation
+ * - **contn**: (int) If 1, the simulation attempts to load its state from `file_continue`. If 0, it generates initial data using functions like `initial_longwave`.
+ * - **file_continue**: (char*) The name of the checkpoint file (usually `out_all.dat`) to read from when `contn = 1`.
+ * - **inr**: (double) Inner radius used for defining the region where the initial perturbation profile is potentially smoothed or matched to a background value.
+ * - **outr**: (double) Outer radius used for defining the region where the initial perturbation profile is potentially smoothed or matched to a background value (often the boundary of the perturbation).
+ * - **mu**: (double) Amplitude parameter for the initial metric perturbation (e.g., conformal factor perturbation `Psi` in `initial_longwave`).
+ * - **kk**: (double) Scale or wavenumber parameter for the initial metric perturbation.
+ * - **mus**: (double) Amplitude parameter for the initial scalar field perturbation (e.g., `Phi` in `initial_iso_longwave`).
+ * - **kks**: (double) Scale or wavenumber parameter for the initial scalar field perturbation.
+ * - **Hb**: (double) The value of the Hubble parameter H at the initial time `tini`. Used for setting background cosmology.
+ *
+ * @subsection subsec_par_ini_phys Physics Parameters
+ * - **fluidw**: (double) The equation of state parameter `w` for the perfect fluid, assuming `P = w * rho`.
+ * - **Mkap**: (double) The kappa parameter (κ) in the MUSCL (Monotone Upstream-centered Schemes for Conservation Laws) reconstruction used for fluid variables. Controls the spatial accuracy and oscillation properties (e.g., κ = 1/3 for third-order).
+ * - **bminmod**: (double) The parameter 'b' used in the minmod slope limiter function, which helps prevent spurious oscillations in the fluid reconstruction near shocks or sharp gradients. Typical values are between 1 and 2.
+ *
+ * @subsection subsec_par_ini_out Output Control
+ * - **ptintval1**: (double) The time interval between data outputs (like `out_jkz.dat`, `out_all.dat`) during the initial phase of the simulation (when `t < changept`).
+ * - **ptintval2**: (double) The time interval between data outputs during the later phase of the simulation (when `t >= changept`).
+ * - **changept**: (double) The simulation time at which the output interval switches from `ptintval1` to `ptintval2`.
+ * - **horicheckintv**: (int) The number of time steps between checks for apparent horizon formation.
+ * - **constoutintv**: (int) The number of time steps between outputs of the constraint violation norms to `out_const.dat`.
+ */

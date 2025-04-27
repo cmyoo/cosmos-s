@@ -1,0 +1,47 @@
+/**
+ * @file par_fmr.d.dox
+ * @brief Documentation for the Fixed Mesh Refinement (FMR) parameter file `par_fmr.d`.
+ *
+ * @details
+ * This file (`par_fmr.d`) configures the parameters for the Fixed Mesh Refinement (FMR) layers used in the COSMOS_S simulation.
+ * It defines the maximum number of refinement levels and, for each potential level, the grid boundary and the trigger condition (based on the central lapse value).
+ *
+ * The file format typically consists of lines with a value followed by an optional comment starting with '#'.
+ * Lines starting directly with '#' are treated as comments and ignored during parsing by the `initial_fmr` function
+ * in `cosmos_s.cpp`. The order of parameters is significant.
+ *
+ * @section sec_par_fmr_format File Format Example
+ * ```
+ * #----------------------------------------------------------------------#
+ * #                       FMR PARAMETERS                                 #
+ * #----------------------------------------------------------------------#
+ * # max fmr layer number (0 means no FMR)
+ * 2                  # laymax (int) Maximum number of refinement levels allowed (Level 0 is the base grid).
+ *
+ * # grid number for fmr region on z-axis (relative to lli of the parent layer)
+ * # These define the upper boundary (lui) of the refined region on the parent grid.
+ * # The refined grid will cover from z=0 up to the physical coordinate z(lbs[n]) of the parent grid.
+ * # Needs laymax+1 entries (though only lbs[0] to lbs[laymax-1] are used to define refinement).
+ * 64                 # lbs[0] (int) Grid index on Layer 0 defining the boundary for Layer 1.
+ * 32                 # lbs[1] (int) Grid index on Layer 1 defining the boundary for Layer 2.
+ * 16                 # lbs[2] (int) Grid index on Layer 2 defining the boundary for Layer 3 (if laymax allows).
+ * ...                # lbs[n] ... up to lbs[laymax]
+ *
+ * # values of the lapse (alpha) at the center (l=lli, k=kli, j=jli) for starting fmr
+ * # When alpha at the center of layer n drops below alp_fmr[n], layer n+1 is created.
+ * # Needs laymax+1 entries (though only alp_fmr[0] to alp_fmr[laymax-1] are used as triggers).
+ * 0.8                # alp_fmr[0] (double) Trigger value for creating Layer 1.
+ * 0.6                # alp_fmr[1] (double) Trigger value for creating Layer 2.
+ * 0.4                # alp_fmr[2] (double) Trigger value for creating Layer 3 (if laymax allows).
+ * ...                # alp_fmr[n] ... up to alp_fmr[laymax]
+ * ```
+ *
+ * @section sec_par_fmr_params Parameter Descriptions
+ *
+ * - **laymax**: (int) The maximum number of refinement *levels* allowed beyond the base grid (Layer 0). If `laymax = 0`, no FMR is used. If `laymax = 2`, the simulation can have Layer 0, Layer 1, and Layer 2.
+ *
+ * - **lbs[n]**: (int array) An array defining the spatial extent of each refinement level. `lbs[n]` specifies the grid index `l` (relative to `lli` of layer `n`) such that the refined region of layer `n+1` covers the physical space from `z=0` up to the coordinate `z(lli_n + lbs[n])` of layer `n`. The number of grid points in the refined region of layer `n+1` will be `2 * lbs[n]`. The code expects `laymax + 1` entries in the file for `lbs`, although only the first `laymax` are used to define the refinement boundaries.
+ *
+ * - **alp_fmr[n]**: (double array) An array defining the trigger condition for creating the next refinement level. When the lapse `alpha` at the center (`l=lli`, `k=kli`, `j=jli`) of layer `n` drops below the value `alp_fmr[n]`, the simulation code creates layer `n+1` (provided `n < laymax`). The code expects `laymax + 1` entries in the file for `alp_fmr`, although only the first `laymax` are used as triggers.
+ *
+ */
