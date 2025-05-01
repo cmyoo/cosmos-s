@@ -823,6 +823,9 @@ public:
 	bool get_fluidevo() const{
 		return fluidevo;
 	}
+	bool get_scalarevo() const{
+		return scalarevo;
+	}
 	bool get_hform() const{
 		return hform;
 	}

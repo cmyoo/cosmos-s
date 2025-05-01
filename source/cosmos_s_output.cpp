@@ -117,7 +117,7 @@ void Fmv0::print_z(ofstream& fout, int j, int k)
 		Arad=get_outv(lui,k,j,5);
 		
 		
-		if(l==lli)
+		if(Arad<=1.0e-15)
 		Comp=0.;
 		else
 		Comp=2.*Mass/Arad;

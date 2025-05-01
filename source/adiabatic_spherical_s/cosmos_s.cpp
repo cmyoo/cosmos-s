@@ -38,6 +38,7 @@
 
 using namespace std;
 
+void check_jkz(Fmv *fmv);
 
 void check_continue_file(					//checking parameter consistency with the continue file
 ifstream& fcontinue, 								//initial parameter file
@@ -644,7 +645,14 @@ int main(int argc,char* argv[])
 	}
 	fileall.close();
 	//continue plot end
-		
+
+	ofstream filecheck("out_check_jkz.dat");						//as functions of x on (k,l) for check
+	filecheck << "## nmax=" << nzmax << " zmax=" << zmax <<  endl;
+	fmv->print_bz(filecheck,0,0);
+
+	//comparing out_jkz.dat with exp_jkz.dat 
+	check_jkz(fmv);
+
 	//finalize
 	for(int i=0;i<=ln;i++)
 	{	
@@ -1031,4 +1039,196 @@ int *lbs									//grid number for fmr region on z-axis
 	for(int i=0;i<ln;i++)
 	fileall << "##fmrzgnum="<< lbs[i] << endl;
 
+}
+
+
+//function to check difference of out_xkl.dat from exp_xkl.dat
+void check_jkz(Fmv *fmv)
+{
+	ifstream expfile("exp_jkz.dat");				//open exp file
+	if(expfile.fail()){
+		cout << "exp_jkz.dat is not found." << endl;
+		abort();
+	}
+
+	ifstream outfile("out_check_jkz.dat");				//open out file
+	if(outfile.fail()){
+		cout << "out_check_jkz.dat is not found." << endl;
+		abort();
+	}
+
+	string bufexp,bufout;
+
+	cout << "header texts in exp_jkz.dat" << endl;
+	getline(expfile, bufexp);
+	cout << bufexp << endl;
+	getline(expfile, bufexp);
+	cout << bufexp << endl;
+	
+	cout << "header texts in out_check_jkz.dat" << endl;
+	getline(outfile, bufout);
+	cout << bufout << endl;
+	getline(outfile, bufout);
+	cout << bufout << endl;
+
+	double vdiff[50];
+	for(int n=0;n<50;n++)
+	vdiff[n]=0.;
+
+	for(int l=fmv->get_llmin();l<=fmv->get_lmax();l++)
+	{
+		double vexp[50];
+		double vout[50];
+
+		getline(outfile, bufout);
+		getline(expfile, bufexp);
+		
+		if(fmv->get_fluidevo() && fmv->get_scalarevo())
+		{
+			// sscanf(bufout.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			// &alpout,&bxout,&byout,&bzout,&bbxout,&bbyout,&bbzout,&gxxout,&gyyout,&gzzout,
+			// &gxyout,&gxzout,&gyzout,&waout,&akxxout,&akyyout,&akzzout,&akxyout,&akxzout,&akyzout,
+			// &ekout,&zgxout,&zgyout,&zgzout,&Eneout,&pxout,&pyout,&pzout,&Dout,&phiiout,&Piout);
+
+			sscanf(bufexp.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			&vexp[0],&vexp[1],&vexp[2],&vexp[3],&vexp[4],&vexp[5],&vexp[6],&vexp[7],&vexp[8],&vexp[9],
+			&vexp[10],&vexp[11],&vexp[12],&vexp[13],&vexp[14],&vexp[15],&vexp[16],&vexp[17],&vexp[18],&vexp[19],
+			&vexp[20],&vexp[21],&vexp[22],&vexp[23],&vexp[24],&vexp[25],&vexp[26],&vexp[27],&vexp[28],&vexp[29],
+			&vexp[30],&vexp[31],&vexp[32],&vexp[33],&vexp[34],&vexp[35],&vexp[36],&vexp[37],&vexp[38],&vexp[39],
+			&vexp[40],&vexp[41],&vexp[42],&vexp[43],&vexp[44],&vexp[45],&vexp[46],&vexp[47],&vexp[48],&vexp[49]);
+
+			sscanf(bufout.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			&vout[0],&vout[1],&vout[2],&vout[3],&vout[4],&vout[5],&vout[6],&vout[7],&vout[8],&vout[9],
+			&vout[10],&vout[11],&vout[12],&vout[13],&vout[14],&vout[15],&vout[16],&vout[17],&vout[18],&vout[19],
+			&vout[20],&vout[21],&vout[22],&vout[23],&vout[24],&vout[25],&vout[26],&vout[27],&vout[28],&vout[29],
+			&vout[30],&vout[31],&vout[32],&vout[33],&vout[34],&vout[35],&vout[36],&vout[37],&vout[38],&vout[39],
+			&vout[40],&vout[41],&vout[42],&vout[43],&vout[44],&vout[45],&vout[46],&vout[47],&vout[48],&vout[49]);
+			
+			for(int n=0;n<50;n++)
+			{
+				vdiff[n]+=abs(vexp[n]-vout[n]);
+			}
+		}
+		else if(fmv->get_fluidevo())
+		{
+			sscanf(bufexp.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			&vexp[0],&vexp[1],&vexp[2],&vexp[3],&vexp[4],&vexp[5],&vexp[6],&vexp[7],&vexp[8],&vexp[9],
+			&vexp[10],&vexp[11],&vexp[12],&vexp[13],&vexp[14],&vexp[15],&vexp[16],&vexp[17],&vexp[18],&vexp[19],
+			&vexp[20],&vexp[21],&vexp[22],&vexp[23],&vexp[24],&vexp[25],&vexp[26],&vexp[27],&vexp[28],&vexp[29],
+			&vexp[30],&vexp[31],&vexp[32],&vexp[33],&vexp[34],&vexp[35],&vexp[36],&vexp[37],&vexp[38],&vexp[39],
+			&vexp[40],&vexp[41],&vexp[42],&vexp[43],&vexp[44],&vexp[45]);
+
+			sscanf(bufout.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			&vout[0],&vout[1],&vout[2],&vout[3],&vout[4],&vout[5],&vout[6],&vout[7],&vout[8],&vout[9],
+			&vout[10],&vout[11],&vout[12],&vout[13],&vout[14],&vout[15],&vout[16],&vout[17],&vout[18],&vout[19],
+			&vout[20],&vout[21],&vout[22],&vout[23],&vout[24],&vout[25],&vout[26],&vout[27],&vout[28],&vout[29],
+			&vout[30],&vout[31],&vout[32],&vout[33],&vout[34],&vout[35],&vout[36],&vout[37],&vout[38],&vout[39],
+			&vout[40],&vout[41],&vout[42],&vout[43],&vout[44],&vout[45]);
+			
+			for(int n=0;n<46;n++)
+			{
+				vdiff[n]+=abs(vexp[n]-vout[n]);
+			}
+		}
+		else
+		{
+			sscanf(bufexp.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			&vexp[0],&vexp[1],&vexp[2],&vexp[3],&vexp[4],&vexp[5],&vexp[6],&vexp[7],&vexp[8],&vexp[9],
+			&vexp[10],&vexp[11],&vexp[12],&vexp[13],&vexp[14],&vexp[15],&vexp[16],&vexp[17],&vexp[18],&vexp[19],
+			&vexp[20],&vexp[21],&vexp[22],&vexp[23],&vexp[24],&vexp[25],&vexp[26],&vexp[27],&vexp[28],&vexp[29],
+			&vexp[30],&vexp[31],&vexp[32],&vexp[33],&vexp[34],&vexp[35],&vexp[36],&vexp[37],&vexp[38],&vexp[39]);
+
+			sscanf(bufout.data(),"%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+			&vout[0],&vout[1],&vout[2],&vout[3],&vout[4],&vout[5],&vout[6],&vout[7],&vout[8],&vout[9],
+			&vout[10],&vout[11],&vout[12],&vout[13],&vout[14],&vout[15],&vout[16],&vout[17],&vout[18],&vout[19],
+			&vout[20],&vout[21],&vout[22],&vout[23],&vout[24],&vout[25],&vout[26],&vout[27],&vout[28],&vout[29],
+			&vout[30],&vout[31],&vout[32],&vout[33],&vout[34],&vout[35],&vout[36],&vout[37],&vout[38],&vout[39]);
+			
+			for(int n=0;n<40;n++)
+			{
+				vdiff[n]+=abs(vexp[n]-vout[n]);
+			}
+		}	
+	}
+	
+	int gridnum=fmv->get_lmax()-fmv->get_llmin()+1;
+
+	ofstream fdiff("out_diff.dat");
+	fdiff.precision(16);
+	fdiff.setf(ios_base::scientific, ios_base::floatfield);
+
+	fdiff << "## difference between out_check_xkl.dat and exp_xkl.dat" << endl;
+	fdiff 
+	<< "diff x=" <<		vdiff[0]/gridnum << endl		//1
+	<< "diff alp=" <<  	vdiff[1]/gridnum << endl		//2
+	<< "diff by=" <<		vdiff[2]/gridnum << endl		//4
+	<< "diff bz=" <<		vdiff[3]/gridnum << endl		//5
+	<< "diff bx=" <<   	vdiff[4]/gridnum << endl		//3
+	<< "diff bbx=" <<  	vdiff[5]/gridnum << endl		//6
+	<< "diff bby=" <<	vdiff[6]/gridnum << endl		//7
+	<< "diff bbz=" <<	vdiff[7]/gridnum << endl		//8
+	<< "diff gxx=" <<	vdiff[8]/gridnum << endl		//9
+	<< "diff gyy=" <<	vdiff[9]/gridnum << endl		//10
+	<< "diff gzz=" <<	vdiff[10]/gridnum << endl		//11
+	<< "diff gxy=" <<	vdiff[11]/gridnum << endl		//12
+	<< "diff gxz=" <<	vdiff[12]/gridnum << endl		//13
+	<< "diff gyz=" <<	vdiff[13]/gridnum << endl		//14
+	<< "diff wa=" <<		vdiff[14]/gridnum << endl		//15
+	<< "diff akxx=" <<	vdiff[15]/gridnum << endl		//16
+	<< "diff akyy=" <<	vdiff[16]/gridnum << endl		//17
+	<< "diff akzz=" <<	vdiff[17]/gridnum << endl		//18
+	<< "diff akxy=" <<	vdiff[18]/gridnum << endl		//19
+	<< "diff akxz=" <<	vdiff[19]/gridnum << endl		//20
+	<< "diff akyz=" <<	vdiff[20]/gridnum << endl		//21
+	<< "diff ek=" <<	vdiff[21]/gridnum << endl		//22
+	<< "diff zgx=" <<	vdiff[22]/gridnum << endl		//23
+	<< "diff zgy=" <<	vdiff[23]/gridnum << endl		//24
+	<< "diff zgz=" <<	vdiff[24]/gridnum << endl		//25
+	<< "diff hamn=" <<	vdiff[25]/gridnum << endl		//26
+	<< "diff ham=" <<	vdiff[26]/gridnum << endl		//27
+	<< "diff nM_z=" <<	vdiff[27]/gridnum << endl		//28
+	<< "diff M_z=" <<	vdiff[28]/gridnum << endl		//29
+	<< "diff dGamz=" <<	vdiff[29]/gridnum << endl		//30
+	<< "diff Mass=" <<	vdiff[30]/gridnum << endl		//31
+	<< "diff Kinv=" <<	vdiff[31]/gridnum << endl		//32
+	<< "diff Arad=" <<	vdiff[32]/gridnum << endl		//33
+	<< "diff Comp=" <<	vdiff[33]/gridnum << endl		//34
+	<< "diff null_exp_p=" <<	vdiff[34]/gridnum << endl		//35
+	<< "diff null_exp_m=" <<	vdiff[35]/gridnum << endl;		//36
+	
+	if(fmv->get_fluidevo())
+	{
+		fdiff 
+		<<"diff Ene=" << vdiff[36]/gridnum << endl		//37
+		<<"diff px=" << vdiff[37]/gridnum << endl		//38
+		<<"diff py=" << vdiff[38]/gridnum << endl		//39
+		<<"diff pz=" << vdiff[39]/gridnum << endl		//40
+		<<"diff Den=" << vdiff[40]/gridnum << endl		//41
+		<<"diff rho/rhob=" << vdiff[41]/gridnum << endl		//42
+		<<"diff Vx=" << vdiff[42]/gridnum << endl		//43
+		<<"diff Vy=" << vdiff[43]/gridnum << endl		//44
+		<<"diff Vz=" << vdiff[44]/gridnum << endl		//45
+		<<"diff eps=" << vdiff[45]/gridnum << endl;		//46
+
+		if(fmv->get_scalarevo())
+		{
+			fdiff 
+			<<"diff phii=" << vdiff[46]/gridnum << endl	//47
+			<<"diff phii=" << vdiff[47]/gridnum << endl	//48
+			<<"diff phii=" << vdiff[48]/gridnum << endl	//49
+			<<"diff Pi=" << vdiff[49]/gridnum << endl;	//50
+		}
+	}
+	else if(fmv->get_scalarevo())
+	{
+		fdiff 
+		<<"diff phii=" << vdiff[36]/gridnum << endl	//37
+		<<"diff phii=" << vdiff[37]/gridnum << endl	//38
+		<<"diff phii=" << vdiff[38]/gridnum << endl	//39
+		<<"diff Pi=" << vdiff[39]/gridnum << endl;	//40
+	}
+
+	fdiff << "## diff file end" << endl;
+
+	return;
 }
