@@ -8,10 +8,10 @@
 [![DOI](https://zenodo.org/badge/118786602.svg)](https://zenodo.org/badge/latestdoi/118786602) -->
 
 An open-source code for spherically symmetric numerical relativity simulation specialized for PBH formation. 
-COSMOS is originally translated from SACRA code [Tetsuro Yamamoto, Masaru Shibata, Keisuke Taniguchi(arXiv:0806.4007)] into C++.
-COSMOS-S is derived from COSMOS to be specialized for spherically symmetric situation.
+<!-- COSMOS is originally translated from SACRA code [Tetsuro Yamamoto, Masaru Shibata, Keisuke Taniguchi(arXiv:0806.4007)] into C++.-->
+COSMOS-S is derived from [COSMOS](https://github.com/cmyoo/cosmos) to be specialized for spherically symmetric situation.
 
-Please visit https://sites.google.com/view/cosmoscode/ for a list of publications using COSMOS, and some others.
+<!-- Please visit https://sites.google.com/view/cosmoscode/ for a list of publications using COSMOS, and some others. -->
 
 <!-- ## Getting started
 Detailed installation instructions and usage examples are available in
